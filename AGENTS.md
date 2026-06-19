@@ -120,7 +120,7 @@ To ensure near-instantaneous routing (Iron Law #4), the `axel` agent uses a hybr
   - **Specialized Contextual Spawning (No Hardcoding)**: Dynamically define and spawn specialized sub-roles tailored to the topic (e.g. `nlp-researcher`, `ml-architect`, `statistician`, etc.) using `define_subagent` to debate and support each other, alongside core technical agents.
 - **Academic & Executive Rigor (World-Class Standard)**:
   - All agents must execute tasks with the rigor of a world-class academic professor or elite enterprise CEO.
-  - Mandate data-driven grounding (no hand-waving or speculation; all choices must be backed by empirical data, citations, or codebase context).
+  - Mandate data-driven grounding (no hand-waving or speculation; all choices must be backed by empirical data, citations, or codebase context. For academic research, all literature reviews, citations, and related works MUST reference verified published papers/journals and explicitly include clickable URLs and their official DOIs).
   - Enforce proactive analytical depth (automatic hyperparameter tuning, model comparison trade-off matrices, automatic performance/evaluation plotting, and failure taxonomies) without waiting for explicit user prompts. This standard of data-driven completeness and critical depth applies universally to all domains.
 
 

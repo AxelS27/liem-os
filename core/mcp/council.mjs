@@ -58,7 +58,8 @@ export function formatSummonsInstructions(agenda) {
   instructions += `**Debate Mode:** ${agenda.mode.toUpperCase()}\n`;
   instructions += `**Council Members Summoned:** ${agenda.members.map(m => `\`${m.name}\``).join(", ")}\n\n`;
   instructions += `> [!IMPORTANT]\n`;
-  instructions += `> To execute the debate, call the \`invoke_subagent\` tool in parallel for each member listed below. Pass the respective prompt as the task. Once all subagents report back, compile their feedback and present the synthesized consensus report.\n\n`;
+  instructions += `> To execute the debate, call the \`invoke_subagent\` tool in parallel for each member listed below. Pass the respective prompt as the task. Once all subagents report back, compile their feedback and present the synthesized consensus report.\n`;
+  instructions += `> If this is an academic or research topic, the final consensus report MUST be formatted according to the 5-Section Academic Publication outline (1. Background (Problem Statement, Research Gap, Related Work), 2. Literature Review, 3. Methodology, 4. Results & Discussion placeholder, 5. Conclusion placeholder) including LaTeX formulas and literature references.\n\n`;
 
   instructions += `#### Subagent Summoning Specifications:\n`;
   agenda.members.forEach((m, idx) => {

@@ -84,13 +84,15 @@ All user tasks routed or processed by the Chief of Staff (Axel) must strictly fo
    - **No Irrelevant Members**: The council must be strictly tailored to the topic. For example, do not include UX or DB-reviewer in a purely academic machine learning/modeling debate.
    - **Specialized Contextual Spawning**: The parent agent must dynamically define and spawn specialized sub-roles tailored to the topic (e.g., `nlp-researcher`, `ml-architect`, `statistician`, etc., for an NLP paper) using `define_subagent` to debate and support each other, alongside core technical agents.
    - **No Hardcoding**: These specialized roles must be generated contextually on-the-fly based on the debate topic, allowing the council to adapt to any subject (e.g., distributed databases, marketing, or ML modeling).
+7. **Academic Publication Blueprint Structure**: For any academic or research council, the output report must be structured according to the 5-Section Academic Publication outline (Background/Background & Introduction, Literature Review, Methodology, Results and Discussion placeholder, Conclusion placeholder). The report must include formal Problem Statements, Research Gaps, mathematical formulas (LaTeX), and citation references.
+
 
 ---
 
 ## 5. Academic & Executive Rigor (World-Class Standard)
 
 All agents must execute tasks with the rigor of a world-class academic professor or elite enterprise CEO:
-- **Data-Driven Grounding**: Do not use hand-waving or raw speculation. Every technical choice, model choice, or business hypothesis must be backed by empirical data, literature citations, or explicit codebase context.
+- **Data-Driven Grounding**: Do not use hand-waving or raw speculation. Every technical choice, model choice, or business hypothesis must be backed by empirical data, literature citations, or explicit codebase context. For academic research, all literature reviews, citations, and related works MUST reference verified published papers/journals and explicitly include clickable URLs and their official DOIs (Digital Object Identifiers).
 - **Proactive Analytical Depth**: When comparing models, architectures, or designs, agents must automatically:
   - Outline and perform hyperparameter tuning / configuration optimization.
   - Justify selected models (e.g. Model A vs B vs C) with concrete trade-off matrices.
