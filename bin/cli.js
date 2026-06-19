@@ -463,14 +463,30 @@ Simply ask the Chief of Staff (Axel) directly in your AI editor (Cursor / Trae /
         }
       }
 
-      // B. Ensure Python 3.12 is installed (via UV if available)
-      if (hasUv) {
-        console.log("[INFO] Ensuring Python 3.12 is available via uv...");
+      // B. Ensure Python is available (prefer user's active python, fallback to 3.12.10 via UV if missing)
+      let pythonVersionToUse = "3.12.10";
+      let hasSystemPython = false;
+      try {
+        const sysPyVer = execSync("python --version", { encoding: "utf8" }).trim();
+        hasSystemPython = true;
+        console.log(`[INFO] System Python detected: ${sysPyVer}`);
+      } catch {
         try {
-          execSync(`${uvCmd} python install 3.12`, { stdio: "inherit" });
-          console.log("[SUCCESS] Python 3.12 is ready!");
+          const sysPyVer3 = execSync("python3 --version", { encoding: "utf8" }).trim();
+          hasSystemPython = true;
+          console.log(`[INFO] System Python detected: ${sysPyVer3}`);
+        } catch {
+          // No system python found
+        }
+      }
+
+      if (!hasSystemPython && hasUv) {
+        console.log(`[INFO] No system Python found. Installing Python ${pythonVersionToUse} via uv...`);
+        try {
+          execSync(`${uvCmd} python install ${pythonVersionToUse}`, { stdio: "inherit" });
+          console.log(`[SUCCESS] Python ${pythonVersionToUse} is ready!`);
         } catch (err) {
-          console.warn("[WARNING] uv failed to install Python 3.12. Falling back to system default Python.");
+          console.warn(`[WARNING] uv failed to install Python ${pythonVersionToUse}. Falling back to default Python.`);
         }
       }
 
@@ -478,15 +494,16 @@ Simply ask the Chief of Staff (Axel) directly in your AI editor (Cursor / Trae /
       console.log("[INFO] Installing code-review-graph...");
       try {
         if (hasUv) {
-          // Use uv tool install to run under Python 3.12 if possible
-          execSync(`${uvCmd} tool install --python 3.12 code-review-graph`, { stdio: "inherit" });
+          // Use uv tool install. If system python was found, let uv manage it automatically. If not, use 3.12.10.
+          const pythonFlag = hasSystemPython ? "" : `--python ${pythonVersionToUse}`;
+          execSync(`${uvCmd} tool install ${pythonFlag} code-review-graph`, { stdio: "inherit" });
         } else {
           execSync("pip install --user code-review-graph", { stdio: "inherit" });
         }
         console.log("[SUCCESS] code-review-graph installed!");
       } catch (err) {
-        // Fallback for tool install if 3.12 pin failed
-        if (hasUv && err.message.includes("3.12")) {
+        // Fallback for tool install if 3.12.10 pin failed
+        if (hasUv && err.message.includes(pythonVersionToUse)) {
           try {
             execSync(`${uvCmd} tool install code-review-graph`, { stdio: "inherit" });
             console.log("[SUCCESS] code-review-graph installed!");
