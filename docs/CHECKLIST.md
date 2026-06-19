@@ -1,28 +1,29 @@
-# checklists.md — Liem OS Verification checklists
+# Quality & Verification Checklists — [Project Name]
 
-This document lists checklists used by developer agents and the Auditor engine to verify Liem OS quality.
+> [!NOTE]
+> This is a placeholder checklists document. Define your own quality gates, testing targets, and release criteria.
 
-## Developer Agent Self-Checklist
-Before marking any task as complete, verify:
-- [ ] Preconditions: The code complies with the 5 relaxed Iron Laws.
-- [ ] Function size: All functions are small and focused (<50 lines).
-- [ ] Formatting: Code is cleanly formatted (e.g. via Biome).
-- [ ] Tests: Unit/integration tests have been written with >= 80% coverage.
-- [ ] Secrets: No keys, passwords, or tokens are hardcoded.
+---
 
-## Auditor Gate Checklist (Parallel Pass)
-When running the `liem_os__verify` MCP tool, the Auditor engine verifies:
-1. **Code Quality**: Correct syntax, formatting, type safety, and decoupled imports.
-2. **UI Design**: Accent/focus rings, responsive margins, white background layouts.
-3. **Security**: CSRF, XSS escaping, parameterization, and secret isolation.
+## 1. Developer Self-Checklist (Before PR Submission)
+- [ ] **Functional**: Does the implementation satisfy the user story acceptance criteria?
+- [ ] **Formatting**: Is code formatted using style formatters (e.g. Biome, ESLint)?
+- [ ] **Clean Code**: Are functions small (<50 lines) and files focused (<400 lines typical)?
+- [ ] **Decoupled**: Do imports avoid direct cross-calls between sibling feature directories?
+- [ ] **Secrets Check**: Ensure zero passwords, tokens, or API keys are committed in source files.
 
-## Git Commits
-- [ ] Format: `<type>: <description>`
-- [ ] Allowed Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `perf`.
-- [ ] Imperative tone, short single line, no AI co-author tag lines.
+---
 
-## Scaffolded Project Checklists
-For scaffolded fullstack monorepos, use the following detailed checklists:
-- [Code Review Checklist](../scaffolds/fullstack-app/docs/checklists/code-review.md)
-- [Launch Readiness Checklist](../scaffolds/fullstack-app/docs/checklists/launch-readiness.md)
-- [New Product Checklist](../scaffolds/fullstack-app/docs/checklists/new-product.md)
+## 2. Test Verification Checklist
+- [ ] **Unit Tests**: Coverage covers critical logic branches (target $\ge$ 80% coverage).
+- [ ] **Integration Tests**: Database queries, schema migrations, and API endpoint hooks are verified.
+- [ ] **E2E Tests**: Playwright scripts successfully verify happy user flow paths.
+- [ ] **Failsafe**: Confirm error bounds, try/catches, and rate-limiting gates are fully verified.
+
+---
+
+## 3. Deployment & Release Checklist
+- [ ] **Config**: Staging/production environment variables documented in `.env.example`.
+- [ ] **CI/CD**: GitHub Actions quality jobs passed successfully (lint, test, build).
+- [ ] **Audit Verdict**: Consolidate code, UI aesthetics, and security check approvals.
+- [ ] **Rollback**: Verify rollback triggers and container reversion scripts are tested.

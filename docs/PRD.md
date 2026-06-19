@@ -1,17 +1,73 @@
-# PRD — Liem OS
+# Product Requirements Document (PRD) — [Project Name]
 
-Liem OS is a standalone, lightweight, and ultra-high-performance AI engineering workspace and MCP runtime bridge. It combines the rigorous engineering discipline of Liem Monorepo with the cross-harness parity of ECC, the crisp boundaries of Forge, and the persistent memory concepts of Ruflo.
+> [!NOTE]
+> This is a placeholder Product Requirements Document (PRD) template. Replace the sections below to detail your own project scope, objectives, and functional specifications.
 
-## Summary
-Liem OS provides a 3-layer platform (Layer A: Core & MCP, Layer B: Templates, Layer C: UI Dashboard) designed to super-charge developer-agent interactions. It enforces the 5 relaxed Iron Laws, manages token optimization and verification statefully, and supports isolated parallel task execution.
+---
 
-## Core Features
-1. **Universal MCP Server Runtime** (`liem-os-mcp`): Exposes tools for routing (`liem_os__route`), scaffolding (`liem_os__scaffold`), audits/verification (`liem_os__verify`), token metrics tracking (`liem_os__compact`), and rule compiling (`liem_os__update`).
-2. **Deterministic Quality Auditor**: Runs parallel checks (Code, UI, Security) and statefully caps auto-remediation at 2 attempts to prevent deadlock loops.
-3. **Memory & Self-Learning**: Stages newly extracted instincts in `core/memory/scratch/` and requires user confirmation to promote them to `core/memory/approved/` permanent compiled rules.
-4. **Multi-Agent Git Worktrees**: Allows spawns of isolated workspaces on dedicated branches via `liem_os__worktree_create` to prevent workspace pollution.
-5. **Starter Scaffolding**: Deploys pre-configured fullstack monorepos, research outline workspaces, documentation hubs, and copywriting briefs.
+## 1. Executive Summary
+- **Problem Statement**: [What problem is this project/feature trying to solve?]
+- **Proposed Solution**: [Briefly describe the proposed system or capability]
+- **Target Audience**: [Who are the primary users of this product?]
+- **Value Proposition**: [Why does this solution matter to the user?]
 
-## Out of Scope (Non-Goals)
-- **ECC Bloat**: Rejecting the 261-skill sprawl; keeping the command surface tight and composable.
-- **Unverified Benchmarks**: Rejects Ruflo's breadth-without-depth and fake statistics.
+---
+
+## 2. Objectives & Key Results (OKRs)
+- **Objective**: [The primary high-level goal of the project]
+  - **KR1**: [Quantifiable metric, e.g. reduce checkout time by 30%]
+  - **KR2**: [Quantifiable metric, e.g. achieve 99.9% API uptime]
+
+---
+
+## 3. Scope & Feature Boundaries
+
+### In-Scope (Phase 1 MVP Core)
+- [ ] **Feature A**: [Describe functional requirement]
+- [ ] **Feature B**: [Describe functional requirement]
+
+### Out of Scope (Future Phases)
+- [ ] **Feature C**: [Describe deferred requirement]
+- [ ] **Feature D**: [Describe deferred requirement]
+
+---
+
+## 4. User Stories & Functional Specifications
+
+| Story ID | As a... | I want to... | So that... | Acceptance Criteria |
+|---|---|---|---|---|
+| US-01 | User | [action] | [benefit] | [criteria 1], [criteria 2] |
+| US-02 | Admin | [action] | [benefit] | [criteria 1], [criteria 2] |
+
+---
+
+## 5. Non-Functional Specifications
+- **Performance**: [e.g. Page loads under 500ms, visible progressive feedback]
+- **Security**: [e.g. Row-Level Security, parameterized queries, CSRF guards]
+- **Scalability**: [e.g. Decoupled module boundaries, horizontal database read-replicas]
+- **Usability**: [e.g. WCAG 2.1 accessibility, keyboard outline navigations]
+
+---
+
+## 6. Implementation Phases & Milestones
+
+```mermaid
+gantt
+    title Project Timeline & Phases
+    dateFormat  YYYY-MM-DD
+    section Phase 1: MVP Core
+    Scaffolding & Core Architecture    :active, p1, 2026-06-19, 7d
+    Features Implementation            :      p2, after p1, 14d
+    section Phase 2: Refinements
+    Auditing & Security Reviews        :      p3, after p2, 5d
+    Deployment & Launch                :      p4, after p3, 3d
+```
+
+---
+
+## 7. Technical Risks & Mitigation Strategies
+
+| Risk Description | Severity | Probability | Mitigation Strategy |
+|---|---|---|---|
+| **API Latency**: DB connection overhead slows page load times | High | Medium | Implement Redis caching layer and optimize indexes |
+| **Token Exhaustion**: Subagents entering recursive loops | Medium | High | Enforce Auditor gate attempt caps and loop operator limits |
