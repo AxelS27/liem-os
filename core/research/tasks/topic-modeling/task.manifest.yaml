@@ -1,0 +1,22 @@
+name: topic-modeling
+version: "1.0.0"
+runner: python
+domain:
+  - text-analysis
+  - linguistics
+  - policy
+  - social-science
+description: "LSA topic modeling (no heavy deps — sklearn only)"
+requires:
+  packages:
+    scikit-learn: "~=1.3"
+    pandas: "~=2.0"
+    matplotlib: "~=3.7"
+    numpy: "~=1.24"
+depends_on: []
+outputs:
+  required:
+    - report.json
+  optional:
+    - plot.png
+    - topic_assignments.csv

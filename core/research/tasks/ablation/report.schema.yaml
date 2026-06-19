@@ -1,0 +1,10 @@
+required:
+  configs:
+    type: array
+    items:
+      macro_f1:
+        type: number
+      name:
+        type: string
+      delta:
+        type: number

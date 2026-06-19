@@ -1,0 +1,18 @@
+name: batch-scaling
+version: "1.0.0"
+runner: python
+description: "Benchmark throughput (samples/sec) and latency at batch sizes 1,4,8,16,32"
+requires:
+  python: ">=3.9"
+  packages:
+    scikit-learn: "~=1.3"
+    pandas: "~=2.0"
+    matplotlib: "~=3.7"
+    numpy: "~=1.24"
+depends_on:
+  - generate-data
+outputs:
+  required:
+    - report.json
+  optional:
+    - plot.png

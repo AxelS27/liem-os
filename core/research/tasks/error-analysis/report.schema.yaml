@@ -1,0 +1,33 @@
+required:
+  accuracy:
+    type: number
+  macro_f1:
+    type: number
+  confusion_matrix:
+    type: array
+    items:
+      type: array
+  error_types:
+    type: object
+    properties:
+      short_text:
+        type: integer
+      has_numbers:
+        type: integer
+      has_url:
+        type: integer
+      long_text:
+        type: integer
+      other:
+        type: integer
+  top_errors:
+    type: array
+    items:
+      text:
+        type: string
+      true_label:
+        type: string
+      pred_label:
+        type: string
+      error_type:
+        type: string

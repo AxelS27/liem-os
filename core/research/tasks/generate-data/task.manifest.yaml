@@ -1,0 +1,19 @@
+name: generate-data
+version: "1.0.0"
+runner: python
+domain:
+  - general
+  - ml
+  - survey
+  - text-analysis
+description: "Schema-driven synthetic data generator — seedable and deterministic"
+requires:
+  packages:
+    pandas: "~=2.0"
+    numpy: "~=1.24"
+depends_on: []
+outputs:
+  required:
+    - report.json
+  optional:
+    - synthetic_data.csv

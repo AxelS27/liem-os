@@ -1,0 +1,21 @@
+name: trend-analysis
+version: "1.0.0"
+runner: python
+domain:
+  - time-series
+  - economics
+  - policy
+  - environmental
+description: "Trend detection, seasonality analysis, and linear forecast for time series data"
+requires:
+  packages:
+    pandas: "~=2.0"
+    matplotlib: "~=3.7"
+    numpy: "~=1.24"
+    scipy: "~=1.11"
+depends_on: []
+outputs:
+  required:
+    - report.json
+  optional:
+    - plot.png

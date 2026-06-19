@@ -1,0 +1,21 @@
+name: correlation-matrix
+version: "1.0.0"
+runner: python
+domain:
+  - economics
+  - psychology
+  - policy
+  - social-science
+description: "Compute and visualize Pearson/Spearman/Kendall correlation matrix"
+requires:
+  packages:
+    pandas: "~=2.0"
+    matplotlib: "~=3.7"
+    numpy: "~=1.24"
+    scipy: "~=1.11"
+depends_on: []
+outputs:
+  required:
+    - report.json
+  optional:
+    - plot.png

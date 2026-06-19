@@ -2,14 +2,14 @@
 
 /**
  * @file Liem OS CLI Router
- * @purpose Routes CLI commands (init, scaffold, council, server) for developer workspaces.
+ * @purpose Routes CLI commands (init, scaffold, council, server, research-*) for developer workspaces.
  */
 
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
-import { execSync } from "child_process";
-import { fileURLToPath } from "url";
+import { execSync, spawnSync } from "child_process";
+import { fileURLToPath, pathToFileURL } from "url";
 import { runAudit } from "../core/mcp/verifier.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -34,6 +34,18 @@ function printUsage() {
   console.log("  update                      Actively check for updates and auto-update the workspace");
   console.log("  verify --file <p>           Audit a single file against Liem OS Quality Gates");
   console.log("  verify --all                Audit all modified/untracked Git files in the workspace");
+  console.log("");
+  console.log("\x1b[36m--- Research Engine (v0.2.0) ---\x1b[0m");
+  console.log("  research-audit --file <p>   Severity-based paper linter (FAIL/WARN/INFO) with fix suggestions");
+  console.log("  research-init --tasks <t>   Deploy composable research task modules (comma-separated)");
+  console.log("  research-test [--target <d>] Run all test_*.py scripts, validate artifacts");
+  console.log("  research-lock [--verify]    Generate or verify reproducibility lockfile (research.lock)");
+  console.log("  env install                 Bootstrap Python environment from deployed task manifests");
+  console.log("");
+  console.log("  Available tasks:");
+  console.log("    ablation, latency-decomposition, batch-scaling, error-analysis, energy-estimate");
+  console.log("    descriptive-stats, correlation-matrix, significance-test, topic-modeling");
+  console.log("    trend-analysis, generate-data");
   console.log("\nOptions:");
   console.log("  --template <type>           monorepo (default) | docs | research | content");
 }
@@ -689,6 +701,250 @@ Simply ask the Chief of Staff (Axel) directly in your AI editor (Cursor / Trae /
         console.log(`\x1b[31m[VERDICT] Quality Gate failed with ${totalFailures} error(s). (NO-GO) \x1b[0m`);
         process.exit(1);
       }
+    }
+
+    // ─── research-audit ───────────────────────────────────────────────────────
+    case "research-audit": {
+      printBanner();
+      const fileArg = flags.file;
+      if (!fileArg) {
+        console.error("[ERROR] Missing --file <path>. Usage: npx liem-os research-audit --file paper.md");
+        process.exit(1);
+      }
+      const absFile = path.resolve(fileArg);
+      if (!fs.existsSync(absFile)) {
+        console.error(`[ERROR] File not found: ${absFile}`);
+        process.exit(1);
+      }
+
+      const auditModPath = path.join(PACKAGE_ROOT, "core/research/audit/audit.mjs");
+      if (!fs.existsSync(auditModPath)) {
+        console.error("[ERROR] Research audit module not found. Is Liem OS v0.2.0 installed correctly?");
+        process.exit(1);
+      }
+
+      const { runResearchAudit } = await import(pathToFileURL(auditModPath).href);
+      const content = fs.readFileSync(absFile, "utf8");
+      const results = await runResearchAudit(content, absFile);
+
+      const COLORS = { FAIL: "\x1b[31m", WARN: "\x1b[33m", INFO: "\x1b[36m" };
+      const RESET = "\x1b[0m";
+
+      let fails = 0, warns = 0, infos = 0;
+      for (const r of results) {
+        const col = COLORS[r.severity] || "";
+        console.log(`${col}[${r.severity}]${RESET} ${r.id.padEnd(24)} ${r.message}`);
+        if (r.suggestion) {
+          console.log(`         ${"\x1b[90m"}→ ${r.suggestion}${RESET}`);
+        }
+        if (r.severity === "FAIL") fails++;
+        else if (r.severity === "WARN") warns++;
+        else infos++;
+      }
+
+      console.log(`\n${"=".repeat(50)}`);
+      console.log(`VERDICT: ${fails > 0 ? "\x1b[31m" : "\x1b[32m"}${fails} FAIL${RESET}  ${warns} WARN  ${infos} INFO`);
+      if (fails > 0) {
+        console.log("\x1b[31mPaper has critical issues. Fix FAILs before submission.\x1b[0m");
+      } else if (warns > 0) {
+        console.log("\x1b[33mPaper is close. Address WARNs to strengthen contribution.\x1b[0m");
+      } else {
+        console.log("\x1b[32mPaper passes all research quality checks!\x1b[0m");
+      }
+      process.exit(fails > 0 ? 1 : 0);
+    }
+
+    // ─── research-init ────────────────────────────────────────────────────────
+    case "research-init": {
+      printBanner();
+      const tasksArg = flags.tasks;
+      const targetArg = flags.target || ".";
+      if (!tasksArg) {
+        console.error("[ERROR] Missing --tasks. Usage: npx liem-os research-init --tasks ablation,significance-test");
+        console.log("Available tasks: ablation, latency-decomposition, batch-scaling, error-analysis, energy-estimate,");
+        console.log("                 descriptive-stats, correlation-matrix, significance-test, topic-modeling, trend-analysis, generate-data");
+        process.exit(1);
+      }
+
+      const requestedTasks = tasksArg.split(",").map(t => t.trim());
+      const researchTasksDir = path.join(PACKAGE_ROOT, "core/research/tasks");
+      const targetDir = path.resolve(targetArg);
+
+      // Resolve depends_on chain (simple one-level expansion)
+      const allTasksToInstall = new Set();
+      for (const task of requestedTasks) {
+        allTasksToInstall.add(task);
+        const manifestPath = path.join(researchTasksDir, task, "task.manifest.yaml");
+        if (fs.existsSync(manifestPath)) {
+          const manifest = fs.readFileSync(manifestPath, "utf8");
+          const depMatches = manifest.match(/depends_on:[^\n]*\n((?:\s+-\s+[^\n]+\n)*)/m);
+          if (depMatches) {
+            const deps = depMatches[1].match(/-\s+([^\n]+)/g) || [];
+            for (const d of deps) allTasksToInstall.add(d.replace(/^-\s+/, "").trim());
+          }
+        }
+      }
+
+      console.log(`[INFO] Installing ${allTasksToInstall.size} task(s) to: ${targetDir}\n`);
+      for (const task of allTasksToInstall) {
+        const srcTask = path.join(researchTasksDir, task);
+        const destTask = path.join(targetDir, task);
+        if (!fs.existsSync(srcTask)) {
+          console.log(`\x1b[31m[NOT FOUND]\x1b[0m ${task} — task not available in this version`);
+          continue;
+        }
+        copyDir(srcTask, destTask);
+        const indicator = requestedTasks.includes(task) ? "" : " (dependency)";
+        console.log(`\x1b[32m[OK]\x1b[0m ${task}${indicator}`);
+      }
+
+      console.log(`\n\x1b[32mDone! Bootstrap your environment:\x1b[0m`);
+      console.log(`  npx liem-os env install`);
+      console.log(`Then run tests immediately:`);
+      for (const task of requestedTasks) {
+        console.log(`  python ${path.join(targetDir, task, `test_${task.replace(/-/g, "_")}.py`)}`);
+      }
+      break;
+    }
+
+    // ─── research-test ───────────────────────────────────────────────────────
+    case "research-test": {
+      printBanner();
+      const testTarget = path.resolve(flags.target || ".");
+      console.log(`[INFO] Discovering test_*.py scripts in: ${testTarget}\n`);
+
+      const pythonCmd = (() => {
+        for (const cmd of ["python3", "python"]) {
+          try { execSync(`${cmd} --version`, { stdio: "ignore" }); return cmd; } catch { /* */ }
+        }
+        return "python";
+      })();
+
+      // Discover all test_*.py recursively (up to 2 levels)
+      const testFiles = [];
+      const scanDir = (dir, depth = 0) => {
+        if (depth > 2 || !fs.existsSync(dir)) return;
+        for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+          if (entry.isDirectory()) scanDir(path.join(dir, entry.name), depth + 1);
+          else if (entry.name.startsWith("test_") && entry.name.endsWith(".py")) {
+            testFiles.push(path.join(dir, entry.name));
+          }
+        }
+      };
+      scanDir(testTarget);
+
+      if (testFiles.length === 0) {
+        console.log("[INFO] No test_*.py files found. Run: npx liem-os research-init --tasks <tasks>");
+        process.exit(0);
+      }
+
+      console.log(`Found ${testFiles.length} test script(s).\n`);
+      let passed = 0, failed = 0;
+
+      for (const testFile of testFiles) {
+        const relName = path.relative(testTarget, testFile);
+        console.log(`\x1b[36m[RUNNING]\x1b[0m ${relName}`);
+        const result = spawnSync(pythonCmd, [testFile], {
+          cwd: path.dirname(testFile),
+          encoding: "utf8",
+          stdio: "pipe",
+        });
+        if (result.status === 0) {
+          const outputLines = (result.stdout || "").split("\n").filter(l => l.trim());
+          outputLines.forEach(l => console.log(`  ${l}`));
+          console.log(`\x1b[32m  PASSED\x1b[0m\n`);
+          passed++;
+        } else {
+          const errLines = (result.stderr || result.stdout || "").split("\n").slice(0, 5);
+          errLines.forEach(l => console.log(`  \x1b[31m${l}\x1b[0m`));
+          console.log(`\x1b[31m  FAILED\x1b[0m\n`);
+          failed++;
+        }
+      }
+
+      console.log("=".repeat(50));
+      console.log(`VERDICT: ${passed} passed, ${failed} failed`);
+      if (failed > 0) {
+        console.log("\x1b[31mSome tests failed. Check output above.\x1b[0m");
+        process.exit(1);
+      } else {
+        console.log("\x1b[32mAll research tests passed. Artifacts generated.\x1b[0m");
+        process.exit(0);
+      }
+    }
+
+    // ─── research-lock ───────────────────────────────────────────────────────
+    case "research-lock": {
+      printBanner();
+      const lockModPath = path.join(PACKAGE_ROOT, "core/research/lock/lockfile.mjs");
+      const { generateLock, verifyLock } = await import(pathToFileURL(lockModPath).href);
+      const cwd = process.cwd();
+
+      if (args.includes("--verify")) {
+        console.log("[INFO] Verifying research.lock against current environment...\n");
+        const { ok, warnings, errors } = verifyLock(cwd);
+        if (errors) { errors.forEach(e => console.log(`\x1b[31m[ERROR]\x1b[0m ${e}`)); process.exit(1); }
+        if (ok) {
+          console.log("\x1b[32m[OK] Environment matches research.lock — results should be reproducible.\x1b[0m");
+        } else {
+          warnings.forEach(w => console.log(`\x1b[33m[WARNING]\x1b[0m ${w}`));
+          console.log("\n\x1b[33mEnvironment differs from locked state. Results may not match exactly.\x1b[0m");
+        }
+      } else {
+        console.log("[INFO] Generating research.lock...\n");
+        const dataPath = flags.data || null;
+        const { lockPath, lock } = generateLock({ cwd, dataPath, seed: parseInt(flags.seed || "42") });
+        console.log(`\x1b[32m[OK]\x1b[0m research.lock generated at: ${lockPath}`);
+        console.log(`     Python : ${lock.environment.python}`);
+        console.log(`     OS     : ${lock.environment.os.name} ${lock.environment.os.version}`);
+        console.log(`     Tasks  : ${Object.keys(lock.tasks).join(", ") || "(none deployed)"}`);
+        console.log(`     Commit : ${lock.code.git_commit}`);
+        console.log(`\nCommit this file to ensure reproducibility.`);
+      }
+      break;
+    }
+
+    // ─── env install ─────────────────────────────────────────────────────────
+    case "env": {
+      const subCmd = args[1];
+      if (subCmd !== "install") {
+        console.error(`[ERROR] Unknown env sub-command: ${subCmd}. Usage: npx liem-os env install`);
+        process.exit(1);
+      }
+      printBanner();
+      console.log("[INFO] Scanning deployed task manifests for dependencies...\n");
+
+      const { buildRequirementsTxt } = await import(pathToFileURL(path.join(PACKAGE_ROOT, "core/research/runners/runner.mjs")).href);
+      const reqContent = buildRequirementsTxt(process.cwd());
+
+      if (!reqContent.trim() || reqContent.split("\n").filter(l => l && !l.startsWith("#")).length === 0) {
+        console.log("[INFO] No task manifests found in current directory.");
+        console.log("       Deploy tasks first: npx liem-os research-init --tasks <tasks>");
+        process.exit(0);
+      }
+
+      const reqPath = path.join(process.cwd(), "requirements.txt");
+      fs.writeFileSync(reqPath, reqContent, "utf8");
+      console.log(`[OK] requirements.txt generated:\n`);
+      console.log(reqContent);
+
+      const pythonCmd = (() => {
+        for (const cmd of ["python3", "python"]) {
+          try { execSync(`${cmd} --version`, { stdio: "ignore" }); return cmd; } catch { /* */ }
+        }
+        return "python";
+      })();
+
+      console.log("\n[INFO] Installing packages...");
+      try {
+        execSync(`${pythonCmd} -m pip install -r requirements.txt`, { stdio: "inherit" });
+        console.log("\n\x1b[32m[OK] Environment bootstrap complete!\x1b[0m");
+      } catch (e) {
+        console.error("[ERROR] pip install failed:", e.message);
+        console.log("Try manually: pip install -r requirements.txt");
+        process.exit(1);
+      }
+      break;
     }
 
     default: {

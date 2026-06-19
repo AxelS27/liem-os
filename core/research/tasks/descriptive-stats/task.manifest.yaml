@@ -1,0 +1,21 @@
+name: descriptive-stats
+version: "1.0.0"
+runner: python
+domain:
+  - survey
+  - social-science
+  - economics
+  - general
+description: "Compute descriptive statistics for tabular research data"
+requires:
+  packages:
+    pandas: "~=2.0"
+    matplotlib: "~=3.7"
+    numpy: "~=1.24"
+    scipy: "~=1.11"
+depends_on: []
+outputs:
+  required:
+    - report.json
+  optional:
+    - plot.png

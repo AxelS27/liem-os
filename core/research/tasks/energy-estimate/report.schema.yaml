@@ -1,0 +1,20 @@
+required:
+  cpu_time_total_sec:
+    type: number
+  energy_per_sample_joules:
+    type: number
+  energy_per_sample_wh:
+    type: number
+  co2_per_sample_g:
+    type: number
+  co2_per_million_samples_kg:
+    type: number
+  throughput_per_sec:
+    type: number
+  assumptions:
+    type: object
+    properties:
+      cpu_tdp_watts:
+        type: number
+      grid_carbon_intensity:
+        type: number

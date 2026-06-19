@@ -1,0 +1,10 @@
+required:
+  batch_results:
+    type: array
+    items:
+      batch_size:
+        type: integer
+      median_latency_ms:
+        type: number
+      throughput_per_sec:
+        type: number

@@ -1,0 +1,14 @@
+required:
+  stages:
+    type: array
+    items:
+      name:
+        type: string
+      p50:
+        type: number
+      p95:
+        type: number
+      p99:
+        type: number
+      pct_share:
+        type: number

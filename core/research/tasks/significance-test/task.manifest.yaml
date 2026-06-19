@@ -1,0 +1,23 @@
+name: significance-test
+version: "1.0.0"
+runner: python
+domain:
+  - ml
+  - survey
+  - social-science
+  - economics
+  - biology
+  - general
+description: "Automatic statistical significance testing (t-test, Mann-Whitney, chi-square, McNemar)"
+requires:
+  packages:
+    pandas: "~=2.0"
+    matplotlib: "~=3.7"
+    numpy: "~=1.24"
+    scipy: "~=1.11"
+depends_on: []
+outputs:
+  required:
+    - report.json
+  optional:
+    - plot.png
