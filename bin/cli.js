@@ -27,9 +27,11 @@ function printUsage() {
   console.log("  scaffold --name <n> --target <t> [--template <type>]   Deploy a template to a specific folder");
   console.log("  council --topic \"<t>\"       Summon the Agent Council debate engine");
   console.log("  server                      Start the MCP server stdio transport");
+  console.log("  watchdog-recover            Automatically extract subagent transcripts and bypass harness hangs");
   console.log("\nOptions:");
   console.log("  --template <type>           monorepo (default) | docs | research | content");
 }
+
 
 // Recursive directory copy helper
 function copyDir(src, dest) {
@@ -427,6 +429,111 @@ Simply ask the Chief of Staff (Axel) directly in your AI editor (Cursor / Trae /
       } catch (e) {
         console.error("[ERROR] MCP Server stopped.");
         process.exit(1);
+      }
+      break;
+    }
+
+    case "watchdog-recover": {
+      printBanner();
+      console.log("[INFO] Running Liem OS Watchdog Recovery...");
+      
+      const configPath = path.join(process.cwd(), "Liem OS", ".liem_os_config.json");
+      if (!fs.existsSync(configPath)) {
+        console.error("[ERROR] Liem OS configuration file not found at ./Liem OS/.liem_os_config.json. Please run init first.");
+        process.exit(1);
+      }
+
+      let config;
+      try {
+        config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+      } catch (e) {
+        console.error("[ERROR] Failed to parse .liem_os_config.json:", e.message);
+        process.exit(1);
+      }
+
+      const { appDataDir, conversationId } = config;
+      if (!appDataDir) {
+        console.error("[ERROR] appDataDir is not defined in .liem_os_config.json");
+        process.exit(1);
+      }
+
+      const brainDir = path.join(appDataDir, "brain");
+      if (!fs.existsSync(brainDir)) {
+        console.error(`[ERROR] Brain directory not found at: ${brainDir}`);
+        process.exit(1);
+      }
+
+      console.log(`[INFO] Scanning for active subagent sessions in brain directory...`);
+      const now = Date.now();
+      const files = fs.readdirSync(brainDir);
+      const activeSessions = [];
+
+      for (const file of files) {
+        const fullPath = path.join(brainDir, file);
+        try {
+          const stats = fs.statSync(fullPath);
+          if (stats.isDirectory()) {
+            const diffSeconds = (now - stats.mtimeMs) / 1000;
+            if (diffSeconds <= 300 && file !== conversationId) {
+              const transcriptPath = path.join(fullPath, ".system_generated", "logs", "transcript.jsonl");
+              if (fs.existsSync(transcriptPath)) {
+                activeSessions.push({
+                  id: file,
+                  mtimeMs: stats.mtimeMs,
+                  diffSeconds,
+                  transcriptPath
+                });
+              }
+            }
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      if (activeSessions.length === 0) {
+        console.log("[INFO] No active subagent sessions found in the last 5 minutes.");
+        break;
+      }
+
+      activeSessions.sort((a, b) => b.mtimeMs - a.mtimeMs);
+      console.log(`\nFound ${activeSessions.length} active subagent session(s):\n`);
+
+      for (const session of activeSessions) {
+        console.log(`--------------------------------------------------`);
+        console.log(`Session ID: ${session.id} (Active ${Math.round(session.diffSeconds)}s ago)`);
+        console.log(`Transcript: ${session.transcriptPath}`);
+        console.log(`--------------------------------------------------`);
+        
+        try {
+          const lines = fs.readFileSync(session.transcriptPath, "utf8").trim().split("\n");
+          if (lines.length === 0 || lines[0] === "") {
+            console.log("[Empty Transcript]");
+            continue;
+          }
+
+          let lastResponse = null;
+
+          for (const line of lines) {
+            try {
+              const step = JSON.parse(line);
+              if (step.type === "PLANNER_RESPONSE" && step.content) {
+                lastResponse = step.content;
+              }
+            } catch (e) {
+              // ignore
+            }
+          }
+
+          if (lastResponse) {
+            console.log("\n[Last Agent Response]:");
+            console.log(lastResponse);
+          } else {
+            console.log("\n[No completed response found yet inside transcript logs]");
+          }
+        } catch (e) {
+          console.error(`[ERROR] Failed to read transcript for session ${session.id}:`, e.message);
+        }
       }
       break;
     }

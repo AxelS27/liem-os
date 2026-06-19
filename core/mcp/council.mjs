@@ -81,11 +81,69 @@ export const AGENT_WEIGHTS = {
 };
 
 /**
+ * Analyzes the topic and returns a weights dictionary with contextual boosts applied.
+ * @param {string} topic - The topic under debate.
+ * @returns {Object} The updated agent weights dictionary.
+ */
+export function getContextualWeights(topic = "") {
+  const lower = topic.toLowerCase();
+  const weights = { ...AGENT_WEIGHTS };
+
+  const domains = {
+    security: ["security", "xss", "csrf", "injection", "auth", "leak", "vulnerability", "crypt", "jwt", "owasp"],
+    database: ["database", "sql", "postgres", "supabase", "schema", "rls", "query", "table", "migration", "prisma"],
+    coder: ["code", "implement", "refactor", "algorithm", "function", "tdd", "class", "bug", "compiler", "error", "typecheck"],
+    designer: ["ui", "ux", "design", "color", "css", "styling", "spacing", "component", "font", "typography", "button"],
+    strategy: ["business", "strategy", "ceo", "okr", "milestone", "launch", "roadmap", "pricing", "marketing", "product"],
+    research: ["research", "academic", "paper", "literature", "synthesis", "data", "experiment", "evaluation", "math", "proof"]
+  };
+
+  const domainMatches = {
+    security: domains.security.some(kw => lower.includes(kw)),
+    database: domains.database.some(kw => lower.includes(kw)),
+    coder: domains.coder.some(kw => lower.includes(kw)),
+    designer: domains.designer.some(kw => lower.includes(kw)),
+    strategy: domains.strategy.some(kw => lower.includes(kw)),
+    research: domains.research.some(kw => lower.includes(kw))
+  };
+
+  if (domainMatches.security) {
+    weights["security"] *= 1.5;
+    weights["auditor"] *= 1.3;
+  }
+  if (domainMatches.database) {
+    weights["database-reviewer"] *= 1.5;
+    weights["architect"] *= 1.3;
+  }
+  if (domainMatches.coder) {
+    weights["coder"] *= 1.5;
+    weights["build-resolver"] *= 1.3;
+  }
+  if (domainMatches.designer) {
+    weights["designer"] *= 1.5;
+    weights["ux"] *= 1.5;
+    weights["a11y"] *= 1.3;
+  }
+  if (domainMatches.strategy) {
+    weights["ceo"] *= 1.5;
+    weights["strategist"] *= 1.3;
+    weights["growth-agent"] *= 1.3;
+  }
+  if (domainMatches.research) {
+    weights["researcher"] *= 1.5;
+    weights["deep-researcher"] *= 1.5;
+  }
+
+  return weights;
+}
+
+/**
  * Calculates weighted consensus based on agent votes.
  * @param {Array<{agent: string, vote: 'GO'|'NO-GO'|'ABSTAIN', confidence?: number}>} votes
+ * @param {string} topic - The technical question or topic under debate.
  * @returns {{consensusScore: number, verdict: 'GO'|'NO-GO'|'ABSTAIN', totalGoWeight: number, totalNoGoWeight: number, totalAbstainWeight: number, details: Array<any>}}
  */
-export function calculateWeightedConsensus(votes) {
+export function calculateWeightedConsensus(votes, topic = "") {
   if (!Array.isArray(votes) || votes.length === 0) {
     return {
       consensusScore: 0,
@@ -97,6 +155,7 @@ export function calculateWeightedConsensus(votes) {
     };
   }
 
+  const activeWeights = getContextualWeights(topic);
   let totalGoWeight = 0;
   let totalNoGoWeight = 0;
   let totalAbstainWeight = 0;
@@ -104,7 +163,7 @@ export function calculateWeightedConsensus(votes) {
 
   for (const v of votes) {
     const agentName = v.agent.toLowerCase();
-    const weight = AGENT_WEIGHTS[agentName] || 1.0;
+    const weight = activeWeights[agentName] || 1.0;
     const confidence = typeof v.confidence === 'number' ? Math.max(0, Math.min(1, v.confidence)) : 1.0;
     const weightedVal = weight * confidence;
 

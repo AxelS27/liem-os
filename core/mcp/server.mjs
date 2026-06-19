@@ -600,6 +600,26 @@ Recommended breakdown:
           failures.push("Security Check: Potential hardcoded secret or credential detected.");
         }
 
+        // Check Academic & Research Markdown Rigor
+        const ext = path.extname(normalizedPath).toLowerCase();
+        if (ext === ".md") {
+          const isResearch = normalizedPath.toLowerCase().includes("research") || 
+                             normalizedPath.toLowerCase().includes("academic") || 
+                             normalizedPath.toLowerCase().includes("synthesis") || 
+                             normalizedPath.toLowerCase().includes("outline");
+          if (isResearch) {
+            const doiMatches = content.match(/10\.\d{4,9}\/[-._;()/:A-Z0-9]+/gi) || [];
+            const urlMatches = content.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi) || [];
+            
+            const uniqueDois = [...new Set(doiMatches)];
+            const uniqueUrls = [...new Set(urlMatches.map(u => u.toLowerCase()))];
+
+            if (uniqueDois.length < 5 || uniqueUrls.length < 5) {
+              failures.push(`Academic Rigor Violation: Research documentation must contain at least 5 verified journal/paper citations with clickable URLs and official DOIs. Found ${uniqueDois.length} unique DOIs and ${uniqueUrls.length} unique URLs.`);
+            }
+          }
+        }
+
         // Hard Block check
         if (failures.length > 0) {
           if (fileState.count >= 2) {
