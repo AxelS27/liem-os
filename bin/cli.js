@@ -422,16 +422,16 @@ Simply ask the Chief of Staff (Axel) directly in your AI editor (Cursor / Trae /
       // 6. Install Token Optimizers automatically
       console.log("\n[INFO] Installing recommended Token Optimizers...");
       
-      // A. Install code-review-graph (local/active Python env)
-      console.log("[INFO] Installing code-review-graph via pip...");
+      // A. Install code-review-graph (user global/tool space)
+      console.log("[INFO] Installing code-review-graph...");
       const hasUv = (() => {
         try { execSync("uv --version", { stdio: "ignore" }); return true; } catch { return false; }
       })();
       try {
         if (hasUv) {
-          execSync("uv pip install code-review-graph", { stdio: "inherit" });
+          execSync("uv tool install code-review-graph", { stdio: "inherit" });
         } else {
-          execSync("pip install code-review-graph", { stdio: "inherit" });
+          execSync("pip install --user code-review-graph", { stdio: "inherit" });
         }
         console.log("[SUCCESS] code-review-graph installed!");
       } catch (err) {
