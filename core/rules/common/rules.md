@@ -85,8 +85,7 @@ All user tasks routed or processed by the Chief of Staff (Axel) must strictly fo
    - **Specialized Contextual Spawning**: The parent agent must dynamically define and spawn specialized sub-roles tailored to the topic (e.g., `nlp-researcher`, `ml-architect`, `statistician`, etc., for an NLP paper) using `define_subagent` to debate and support each other, alongside core technical agents.
    - **No Hardcoding**: These specialized roles must be generated contextually on-the-fly based on the debate topic, allowing the council to adapt to any subject (e.g., distributed databases, marketing, or ML modeling).
 7. **Academic Publication Blueprint Structure**: For any academic or research council, the output report must be structured according to the 5-Section Academic Publication outline (Background/Background & Introduction, Literature Review, Methodology, Results and Discussion placeholder, Conclusion placeholder). The report must include formal Problem Statements, Research Gaps, mathematical formulas (LaTeX), and citation references.
-
-
+8. **Autonomous Council Watchdog Recovery (Bypass Harness Hangs)**: If subagents do not report back within 120 seconds (indicating a harness UI hang), the parent agent must bypass the wait, read the subagent log files directly from the filesystem (located under `<appDataDir>/brain/<conversationId>/.system_generated/logs/` or `<appDataDir>/brain/<subagentConversationId>/.system_generated/logs/transcript.jsonl`), compile the consensus, and proceed.
 ---
 
 ## 5. Academic & Executive Rigor (World-Class Standard)
