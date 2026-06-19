@@ -2,7 +2,7 @@
 
 All notable changes to Liem OS will be documented in this file.
 
-## [1.1.0] - 2026-06-19
+## [0.1.0] - 2026-06-19
 
 ### Added
 - **Pure JavaScript BPE Token Estimator**: Added a dependency-free, regex-based BPE tokenizer matching GPT-3.5/4 token boundaries with >96% accuracy. Used for accurate context metrics calculation.
@@ -13,6 +13,6 @@ All notable changes to Liem OS will be documented in this file.
 - **Autonomous Watchdog Rules**: Defined Rule 8 in common guidelines and AGENTS.md for log-based recovery from stalled subagent calls.
 - **Academic Rigor Standards**: Mandated at least 5 verified citations with DOIs/URLs, and detailed configuration parameters for all engineering setups.
 
-## [1.0.0] - 2026-06-12
+## [0.0.1] - 2026-06-19
 
 - **Initial Release**: Core MCP server stdio bridge, 25 specialized agent files, automated project template scaffolding, Axel routing engine, and basic auditor audit gates.
