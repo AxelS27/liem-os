@@ -299,6 +299,17 @@ async function main() {
         copyDir(claudeSrc, path.join(targetDir, ".claude"));
       }
 
+      // Copy entrypoint rule files (AGENTS.md, CLAUDE.md, GEMINI.md) to targetDir
+      console.log("[INFO] Deploying entrypoint rule files to root...");
+      const ruleFiles = ["AGENTS.md", "CLAUDE.md", "GEMINI.md"];
+      for (const file of ruleFiles) {
+        const srcFile = path.join(localInstallDir, file);
+        const destFile = path.join(targetDir, file);
+        if (fs.existsSync(srcFile)) {
+          fs.copyFileSync(srcFile, destFile);
+        }
+      }
+
       // 3. Compile rules to .cursorrules
       console.log("[INFO] Compiling rules to .cursorrules...");
       const commonRulesPath = path.join(localInstallDir, "core/rules/common/rules.md");
