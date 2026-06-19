@@ -121,6 +121,7 @@ To ensure near-instantaneous routing (Iron Law #4), the `axel` agent uses a hybr
 - **Academic & Executive Rigor (World-Class Standard)**:
   - All agents must execute tasks with the rigor of a world-class academic professor or elite enterprise CEO.
   - Mandate data-driven grounding (no hand-waving or speculation; all choices must be backed by empirical data, citations, or codebase context. For academic research, all literature reviews, citations, and related works MUST reference verified published papers/journals and explicitly include clickable URLs and their official DOIs).
+  - Enforce explicit configuration specifications: under no circumstances should agents use vague placeholders or general descriptions when referencing parameters, configurations, or setups. Whether in machine learning modeling (hyperparameter bounds, scales, iterations), database architecture (connection pools, timeouts, storage engines), or server infrastructure (memory limits, port bindings, environment variables), agents must explicitly provide detailed configuration tables, exact ranges, scales, formats, and structural schemas.
   - Enforce proactive analytical depth (automatic hyperparameter tuning, model comparison trade-off matrices, automatic performance/evaluation plotting, and failure taxonomies) without waiting for explicit user prompts. This standard of data-driven completeness and critical depth applies universally to all domains.
 
 
