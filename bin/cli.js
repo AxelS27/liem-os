@@ -28,6 +28,8 @@ function printUsage() {
   console.log("  council --topic \"<t>\"       Summon the Agent Council debate engine");
   console.log("  server                      Start the MCP server stdio transport");
   console.log("  watchdog-recover            Automatically extract subagent transcripts and bypass harness hangs");
+  console.log("  changelog                   Show the patch logs and version release history");
+  console.log("  version                     Print the current local version and check for remote updates");
   console.log("\nOptions:");
   console.log("  --template <type>           monorepo (default) | docs | research | content");
 }
@@ -235,10 +237,47 @@ async function checkUpdates() {
   }
 }
 
+// Active check command with verbose status output
+async function checkUpdatesCommand() {
+  try {
+    const pkgPath = path.join(PACKAGE_ROOT, "package.json");
+    if (!fs.existsSync(pkgPath)) return;
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+    const localVersion = pkg.version;
+    const remoteUrl = "https://raw.githubusercontent.com/AxelS27/liem-os/main/Liem%20OS/package.json";
+
+    console.log("Connecting to GitHub update registry...");
+    const response = await fetch(remoteUrl);
+    if (response.ok) {
+      const data = await response.json();
+      const remoteVersion = data.version;
+      if (remoteVersion === localVersion) {
+        console.log(`[SUCCESS] You are running the latest version of Liem OS (v${localVersion}). Up to date! 👍`);
+      } else {
+        console.log(`\n--- Update Available ---`);
+        console.log(`A new version of Liem OS is available: v${remoteVersion} (Local: v${localVersion})`);
+        console.log(`To update, run: npx github:AxelS27/liem-os init`);
+        console.log(`-------------------------\n`);
+      }
+    } else {
+      console.log("[WARNING] Unable to contact GitHub update registry.");
+    }
+  } catch (e) {
+    console.log("[ERROR] Could not check for updates. Please check your internet connection.");
+  }
+}
+
 // Execute core command router
 async function main() {
   const args = process.argv.slice(2);
   const command = args[0];
+
+  if (command === "-v" || command === "--version") {
+    const pkgPath = path.join(PACKAGE_ROOT, "package.json");
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+    console.log(`v${pkg.version}`);
+    process.exit(0);
+  }
 
   if (!command || command === "--help" || command === "-h") {
     printBanner();
@@ -534,6 +573,28 @@ Simply ask the Chief of Staff (Axel) directly in your AI editor (Cursor / Trae /
         } catch (e) {
           console.error(`[ERROR] Failed to read transcript for session ${session.id}:`, e.message);
         }
+      }
+      break;
+    }
+
+    case "version": {
+      printBanner();
+      const pkgPath = path.join(PACKAGE_ROOT, "package.json");
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+      console.log(`Liem OS Local Version: v${pkg.version}`);
+      console.log("\nChecking for updates...");
+      await checkUpdatesCommand();
+      break;
+    }
+
+    case "changelog": {
+      printBanner();
+      const changelogPath = path.join(PACKAGE_ROOT, "CHANGELOG.md");
+      if (fs.existsSync(changelogPath)) {
+        const content = fs.readFileSync(changelogPath, "utf8");
+        console.log(content);
+      } else {
+        console.log("Changelog file not found.");
       }
       break;
     }
