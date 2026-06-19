@@ -377,13 +377,24 @@ async function main() {
 
       // 3. Compile rules to .cursorrules
       console.log("[INFO] Compiling rules to .cursorrules...");
-      const commonRulesPath = path.join(localInstallDir, "core/rules/common/rules.md");
-      const codingRulesPath = path.join(localInstallDir, "core/rules/coding/rules.md");
-      
+      const rulesRootDir = path.join(localInstallDir, "core/rules");
       let mergedRules = "";
-      if (fs.existsSync(commonRulesPath)) mergedRules += fs.readFileSync(commonRulesPath, "utf8") + "\n\n";
-      if (fs.existsSync(codingRulesPath)) mergedRules += fs.readFileSync(codingRulesPath, "utf8") + "\n\n";
-      
+      if (fs.existsSync(rulesRootDir)) {
+        const categories = fs.readdirSync(rulesRootDir).sort((a, b) => {
+          if (a === "common") return -1;
+          if (b === "common") return 1;
+          if (a === "coding") return -1;
+          if (b === "coding") return 1;
+          return a.localeCompare(b);
+        });
+        for (const cat of categories) {
+          const ruleFilePath = path.join(rulesRootDir, cat, "rules.md");
+          if (fs.existsSync(ruleFilePath)) {
+            console.log(`  - Including rules: ${cat}`);
+            mergedRules += fs.readFileSync(ruleFilePath, "utf8") + "\n\n";
+          }
+        }
+      }
       fs.writeFileSync(path.join(targetDir, ".cursorrules"), mergedRules, "utf8");
 
       // 4. Create LIEM_OS.md workspace indicator
@@ -798,12 +809,11 @@ Simply ask the Chief of Staff (Axel) directly in your AI editor (Cursor / Trae /
         console.log(`\x1b[32m[OK]\x1b[0m ${task}${indicator}`);
       }
 
-      console.log(`\n\x1b[32mDone! Bootstrap your environment:\x1b[0m`);
-      console.log(`  npx liem-os env install`);
-      console.log(`Then run tests immediately:`);
-      for (const task of requestedTasks) {
-        console.log(`  python ${path.join(targetDir, task, `test_${task.replace(/-/g, "_")}.py`)}`);
-      }
+      console.log(`\n\x1b[32mDone! Task specifications deployed.\x1b[0m`);
+      console.log(`Instructions for each task are in their respective INSTRUCTIONS.md files.`);
+      console.log(`Please ask your AI coding assistant to implement the research scripts and tests.`);
+      console.log(`Once implemented, run your test verification:`);
+      console.log(`  npx liem-os research-test`);
       break;
     }
 

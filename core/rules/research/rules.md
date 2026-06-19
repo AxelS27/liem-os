@@ -37,3 +37,19 @@ To maintain complete credibility and traceability across all research documents 
   - The exact URL or API documentation reference.
   - The relative file path and line number range of the source codebase.
 - **Opinion Isolation**: Always separate factual evidence from logical deduction or hypothetical suggestions. Use headers like `## Verified Facts` vs `## Hypotheses/Suggestions`.
+
+---
+
+## 4. Deep Research & Investigation Protocol
+
+When executing or troubleshooting research tasks (including ML modeling, statistical analysis, systems benchmarking, time-series, or data generation):
+- **Deep Exploration Directive**: Never settle for basic or superficial mock-ups, static placeholders, or simple heuristics. You MUST explore the problem topic and case as deeply as possible.
+- **ML & Modeling Depth**: If the task involves ML/modelling:
+  - You MUST perform thorough hyperparameter tuning (e.g. grid search, random search, or Bayesian optimization).
+  - You MUST evaluate and compare multiple model families (e.g., linear models, tree-based models, neural networks).
+  - You MUST implement rigorous cross-validation and ensure no target leakage occurs.
+  - You MUST perform a detailed error analysis, categorizing failures and describing limitations.
+  - You MUST conduct significance testing (with p-values and effect sizes) to validate that model improvements are statistically sound.
+- **General Research Rigor**: For statistical or time-series research, perform stationarity checks, test multiple hypothesis classes, and provide effect size metrics.
+- **No Hardcoded Scaffolding**: Adapt your code dynamically to the shape, format, and structure of the dataset. Never hardcode domain logic or language-specific slang/clitics unless explicitly configured.
+
