@@ -116,16 +116,44 @@ function main() {
       console.log(`🚀 Initializing Liem OS workspace in: ${targetDir}`);
       console.log(`Using template: ${template}`);
 
-      // 1. Resolve source template path
+      // 1. Establish permanent global directory
+      const home = os.homedir();
+      const globalInstallDir = path.join(home, ".liem-os");
+      console.log(`\n📦 Installing Liem OS permanently to: ${globalInstallDir}`);
+      
+      // Ensure the directory exists and copy package contents
+      if (!fs.existsSync(globalInstallDir)) {
+        fs.mkdirSync(globalInstallDir, { recursive: true });
+      }
+      copyDir(PACKAGE_ROOT, globalInstallDir);
+
+      // Run npm/pnpm install in the permanent directory
+      console.log("Installing core dependencies in the permanent folder...");
+      const usePnpm = (() => {
+        try {
+          execSync("pnpm --version", { stdio: "ignore" });
+          return true;
+        } catch (e) {
+          return false;
+        }
+      })();
+      const installCmd = usePnpm ? "pnpm install" : "npm install";
+      try {
+        execSync(installCmd, { cwd: globalInstallDir, stdio: "inherit" });
+      } catch (e) {
+        console.warn("⚠️ Warning: Dependency installation failed. You can run 'npm install' inside ~/.liem-os/ manually.");
+      }
+
+      // 2. Resolve source template path
       let srcDir = "";
       if (template === "docs") {
-        srcDir = path.join(PACKAGE_ROOT, "scaffolds/docs-project");
+        srcDir = path.join(globalInstallDir, "scaffolds/docs-project");
       } else if (template === "research") {
-        srcDir = path.join(PACKAGE_ROOT, "scaffolds/research-project");
+        srcDir = path.join(globalInstallDir, "scaffolds/research-project");
       } else if (template === "content") {
-        srcDir = path.join(PACKAGE_ROOT, "scaffolds/content-project");
+        srcDir = path.join(globalInstallDir, "scaffolds/content-project");
       } else {
-        srcDir = path.join(PACKAGE_ROOT, "scaffolds/fullstack-app");
+        srcDir = path.join(globalInstallDir, "scaffolds/fullstack-app");
       }
 
       if (!fs.existsSync(srcDir)) {
@@ -133,14 +161,14 @@ function main() {
         process.exit(1);
       }
 
-      // 2. Scaffold files to current directory
-      console.log("Scaffolding files...");
+      // 3. Scaffold files to current directory
+      console.log("Scaffolding files into target workspace...");
       copyDir(srcDir, targetDir);
 
-      // 3. Compile rules to .cursorrules
+      // 4. Compile rules to .cursorrules
       console.log("Compiling rules to .cursorrules...");
-      const commonRulesPath = path.join(PACKAGE_ROOT, "core/rules/common/rules.md");
-      const codingRulesPath = path.join(PACKAGE_ROOT, "core/rules/coding/rules.md");
+      const commonRulesPath = path.join(globalInstallDir, "core/rules/common/rules.md");
+      const codingRulesPath = path.join(globalInstallDir, "core/rules/coding/rules.md");
       
       let mergedRules = "";
       if (fs.existsSync(commonRulesPath)) mergedRules += fs.readFileSync(commonRulesPath, "utf8") + "\n\n";
@@ -148,8 +176,8 @@ function main() {
       
       fs.writeFileSync(path.join(targetDir, ".cursorrules"), mergedRules, "utf8");
 
-      // 4. Register the MCP server globally in Claude Desktop
-      const mcpServerPath = path.join(PACKAGE_ROOT, "core/mcp/server.mjs");
+      // 5. Register the MCP server globally in Claude Desktop
+      const mcpServerPath = path.join(globalInstallDir, "core/mcp/server.mjs");
       registerClaudeMCP(mcpServerPath);
 
       console.log("\n\x1b[32m==========================================\x1b[0m");
@@ -178,15 +206,19 @@ function main() {
       const absoluteTarget = path.resolve(target);
       console.log(`Deploying template '${template}' to '${absoluteTarget}'...`);
 
+      const home = os.homedir();
+      const globalInstallDir = path.join(home, ".liem-os");
+      const baseDir = fs.existsSync(globalInstallDir) ? globalInstallDir : PACKAGE_ROOT;
+
       let srcDir = "";
       if (template === "docs") {
-        srcDir = path.join(PACKAGE_ROOT, "scaffolds/docs-project");
+        srcDir = path.join(baseDir, "scaffolds/docs-project");
       } else if (template === "research") {
-        srcDir = path.join(PACKAGE_ROOT, "scaffolds/research-project");
+        srcDir = path.join(baseDir, "scaffolds/research-project");
       } else if (template === "content") {
-        srcDir = path.join(PACKAGE_ROOT, "scaffolds/content-project");
+        srcDir = path.join(baseDir, "scaffolds/content-project");
       } else {
-        srcDir = path.join(PACKAGE_ROOT, "scaffolds/fullstack-app");
+        srcDir = path.join(baseDir, "scaffolds/fullstack-app");
       }
 
       if (!fs.existsSync(srcDir)) {
