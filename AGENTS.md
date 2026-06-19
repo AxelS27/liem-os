@@ -40,11 +40,11 @@ These laws are absolute and override all other configurations, rules, or decisio
 ## Source of Truth Hierarchy
 When sources conflict, top wins:
 1. AGENTS.md (this file)
-2. core/laws/iron-laws.md      ← same laws, canonical copy
-3. docs/DECISIONS.md           ← locked technical/product choices
-4. core/rules/<domain>/        ← domain rules (load only the active domain)
-5. core/memory/approved/       ← approved self-learned rules
-6. core/hooks/                 ← system execution hooks
+2. Liem OS/core/laws/iron-laws.md      ← same laws, canonical copy
+3. Liem OS/docs/DECISIONS.md           ← locked technical/product choices
+4. Liem OS/core/rules/<domain>/        ← domain rules (load only the active domain)
+5. Liem OS/core/memory/approved/       ← approved self-learned rules
+6. Liem OS/core/hooks/                 ← system execution hooks
 7. Existing code/artifact patterns
 8. Your own judgment (flag when overriding #1-5)
 
@@ -60,7 +60,7 @@ To ensure feature parity across platforms, the installation script compiles core
 
 ## Graceful Hook Degradation & State-Injected Context Tracking
 If the host harness does not support native execution hooks (e.g. Cursor, Gemini):
-- The agent must manually execute `core/hooks/session-start.mjs` (or run `/start`) at the start of every session.
+- The agent must manually execute `Liem OS/core/hooks/session-start.mjs` (or run `/start`) at the start of every session.
 - Since LLMs cannot self-monitor token usage, the `liem-os-mcp` server actively calculates context size and appends a `[CONTEXT_METRICS: <used_tokens>/<limit_tokens> (<percentage>%)]` metadata tag to the output of *every* tool response. This forces the token state into the active prompt history, prompting the agent to manually execute context compression (`/compact` or `liem_os__compact`) when usage exceeds 80%.
 
 ---
@@ -131,8 +131,8 @@ When registered, Liem OS exposes these tools directly to the host AI:
 - `liem_os__verify`: Runs linting, checks rules, and executes the consolidated auditor.
 - `liem_os__compact`: Triggers context compression.
 - `liem_os__update`: Dynamic upstream rule synchronization, compiling approved self-learned rules to .cursorrules.
-- `liem_os__self_learn`: Extracts and stages a learned pattern in core/memory/scratch/.
-- `liem_os__consolidate`: Promotes a staged pattern to core/memory/approved/ or merges it directly to a domain rules file.
+- `liem_os__self_learn`: Extracts and stages a learned pattern in Liem OS/core/memory/scratch/.
+- `liem_os__consolidate`: Promotes a staged pattern to Liem OS/core/memory/approved/ or merges it directly to a domain rules file.
 - `liem_os__council`: Summons a panel of AI agents to debate a topic and compile a synthesized consensus report.
 
 ---
@@ -148,8 +148,8 @@ When registered, Liem OS exposes these tools directly to the host AI:
 | /ship-check   | launch-readiness audit ending in GO/NO-GO                 |
 | /handoff      | end-of-session sync so next chat starts oriented          |
 | /worktree     | spawn parallel work on a branch via liem_os__worktree_create |
-| /self-learn   | extract patterns from this session into core/memory/scratch/ |
-| /consolidate  | promote staged patterns to core/memory/approved/ or domain rules |
+| /self-learn   | extract patterns from this session into Liem OS/core/memory/scratch/ |
+| /consolidate  | promote staged patterns to Liem OS/core/memory/approved/ or domain rules |
 | /council      | summon AI panel to debate and synthesize a consensus report |
 
 ---
@@ -171,7 +171,7 @@ Unlike the old Liem template, these are recommended integrations. If absent, the
 3. Match existing patterns in that domain before inventing.
 4. Shared logic goes through the shared layer — never duplicate.
 5. Finish → self-check against the domain's rules + the Iron Laws.
-6. Real decision made → append to docs/DECISIONS.md.
+6. Real decision made → append to Liem OS/docs/DECISIONS.md.
 7. Major artifact done → auditor gate (remediation caps at 2 tries).
 
 ---
