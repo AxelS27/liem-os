@@ -174,12 +174,12 @@ function registerCodexMCP(configPath, serverPath) {
   }
 }
 
-// Orchestrator: Register all detected coding agents
-function registerAllInstalledMCP(serverPath, targetDir) {
+// Orchestrator: Register all detected coding agents (locally in the workspace)
+function registerAllLocalMCP(serverPath, targetDir) {
   const home = os.homedir();
   const isWin = os.platform() === "win32";
 
-  // 1. Claude Desktop
+  // 1. Claude Desktop (Global config pointing to local path, since Claude has no project-local config)
   const claudePath = isWin
     ? path.join(process.env.APPDATA || path.join(home, "AppData/Roaming"), "Claude", "claude_desktop_config.json")
     : path.join(home, "Library", "Application Support", "Claude", "claude_desktop_config.json");
@@ -187,75 +187,21 @@ function registerAllInstalledMCP(serverPath, targetDir) {
     registerClaudeMCP(claudePath, serverPath);
   }
 
-  // 2. Cursor Global
-  const cursorGlobalPath = path.join(home, ".cursor", "mcp.json");
-  if (fs.existsSync(path.dirname(cursorGlobalPath))) {
-    registerJsonMCP(cursorGlobalPath, serverPath, "Cursor");
-  }
+  // 2. Local Cursor
+  const cursorPath = path.join(targetDir, ".cursor", "mcp.json");
+  registerJsonMCP(cursorPath, serverPath, "Cursor (Local)");
 
-  // 3. Trae Global
-  const traeGlobalPath = path.join(home, ".trae", "mcp.json");
-  if (fs.existsSync(path.dirname(traeGlobalPath))) {
-    registerJsonMCP(traeGlobalPath, serverPath, "Trae");
-  }
+  // 3. Local Trae
+  const traePath = path.join(targetDir, ".trae", "mcp.json");
+  registerJsonMCP(traePath, serverPath, "Trae (Local)");
 
-  // 4. Windsurf Global
-  const windsurfGlobalPath = path.join(home, ".codeium", "windsurf", "mcp_config.json");
-  if (fs.existsSync(path.dirname(windsurfGlobalPath))) {
-    registerJsonMCP(windsurfGlobalPath, serverPath, "Windsurf");
-  }
+  // 4. Local OpenCode
+  const openCodePath = path.join(targetDir, ".opencode.json");
+  registerOpenCodeMCP(openCodePath, serverPath);
 
-  // 5. OpenCode Global
-  const openCodeGlobalPath = path.join(home, ".opencode.json");
-  if (fs.existsSync(openCodeGlobalPath) || fs.existsSync(path.join(home, ".config", "opencode")) || fs.existsSync(path.join(home, ".opencode"))) {
-    registerOpenCodeMCP(openCodeGlobalPath, serverPath);
-  }
-
-  // 6. Codex Global
-  const codexGlobalPath = path.join(home, ".codex", "config.toml");
-  if (fs.existsSync(path.dirname(codexGlobalPath))) {
-    registerCodexMCP(codexGlobalPath, serverPath);
-  }
-
-  // 7. VS Code Cline/Roo Code Global
-  const codeGlobalDir = (() => {
-    if (isWin) {
-      return path.join(process.env.APPDATA || path.join(home, "AppData/Roaming"), "Code", "User", "globalStorage");
-    }
-    if (os.platform() === "darwin") {
-      return path.join(home, "Library", "Application Support", "Code", "User", "globalStorage");
-    }
-    return path.join(home, ".config", "Code", "User", "globalStorage");
-  })();
-
-  if (fs.existsSync(codeGlobalDir)) {
-    const clinePath = path.join(codeGlobalDir, "saoudrizwan.claude-dev", "settings", "cline_mcp_settings.json");
-    if (fs.existsSync(path.dirname(clinePath))) {
-      registerJsonMCP(clinePath, serverPath, "VS Code Cline");
-    }
-    const rooPath = path.join(codeGlobalDir, "roodevhops.roo-cline", "settings", "cline_mcp_settings.json");
-    if (fs.existsSync(path.dirname(rooPath))) {
-      registerJsonMCP(rooPath, serverPath, "VS Code Roo Code");
-    }
-  }
-
-  // Local Project configurations
-  if (targetDir) {
-    const cursorLocalPath = path.join(targetDir, ".cursor", "mcp.json");
-    if (fs.existsSync(path.dirname(cursorLocalPath))) {
-      registerJsonMCP(cursorLocalPath, serverPath, "Local Cursor");
-    }
-
-    const traeLocalPath = path.join(targetDir, ".trae", "mcp.json");
-    if (fs.existsSync(path.dirname(traeLocalPath))) {
-      registerJsonMCP(traeLocalPath, serverPath, "Local Trae");
-    }
-
-    const codexLocalPath = path.join(targetDir, ".codex", "config.toml");
-    if (fs.existsSync(path.dirname(codexLocalPath))) {
-      registerCodexMCP(codexLocalPath, serverPath);
-    }
-  }
+  // 5. Local Codex
+  const codexPath = path.join(targetDir, ".codex", "config.toml");
+  registerCodexMCP(codexPath, serverPath);
 }
 
 // Check for updates against GitHub
@@ -311,23 +257,20 @@ async function main() {
     case "init": {
       printBanner();
       const targetDir = process.cwd();
-      const template = flags.template || "monorepo";
       console.log(`[INFO] Initializing Liem OS workspace in: ${targetDir}`);
-      console.log(`[INFO] Using template: ${template}`);
 
-      // 1. Establish permanent global directory
-      const home = os.homedir();
-      const globalInstallDir = path.join(home, ".liem-os");
-      console.log(`\n[INFO] Installing Liem OS permanently to: ${globalInstallDir}`);
+      // 1. Establish local directory in the active workspace
+      const localInstallDir = path.join(targetDir, "Liem OS");
+      console.log(`\n[INFO] Installing Liem OS locally to: ${localInstallDir}`);
       
       // Ensure the directory exists and copy package contents
-      if (!fs.existsSync(globalInstallDir)) {
-        fs.mkdirSync(globalInstallDir, { recursive: true });
+      if (!fs.existsSync(localInstallDir)) {
+        fs.mkdirSync(localInstallDir, { recursive: true });
       }
-      copyDir(PACKAGE_ROOT, globalInstallDir);
+      copyDir(PACKAGE_ROOT, localInstallDir);
 
-      // Run npm/pnpm install in the permanent directory
-      console.log("[INFO] Installing core dependencies in the permanent folder...");
+      // Run npm/pnpm install in the local directory
+      console.log("[INFO] Installing core dependencies in the local folder...");
       const usePnpm = (() => {
         try {
           execSync("pnpm --version", { stdio: "ignore" });
@@ -338,36 +281,28 @@ async function main() {
       })();
       const installCmd = usePnpm ? "pnpm install" : "npm install";
       try {
-        execSync(installCmd, { cwd: globalInstallDir, stdio: "inherit" });
+        execSync(installCmd, { cwd: localInstallDir, stdio: "inherit" });
       } catch (e) {
-        console.warn("[WARNING] Dependency installation failed. You can run 'npm install' inside ~/.liem-os/ manually.");
+        console.warn("[WARNING] Dependency installation failed. You can run 'npm install' inside ./Liem OS/ manually.");
       }
 
-      // 2. Resolve source template path
-      let srcDir = "";
-      if (template === "docs") {
-        srcDir = path.join(globalInstallDir, "scaffolds/docs-project");
-      } else if (template === "research") {
-        srcDir = path.join(globalInstallDir, "scaffolds/research-project");
-      } else if (template === "content") {
-        srcDir = path.join(globalInstallDir, "scaffolds/content-project");
-      } else {
-        srcDir = path.join(globalInstallDir, "scaffolds/fullstack-app");
+      // 2. Copy agent rules folders (.agents, .claude) from localInstallDir to targetDir
+      const agentsSrc = path.join(localInstallDir, "scaffolds/fullstack-app/.agents");
+      const claudeSrc = path.join(localInstallDir, "scaffolds/fullstack-app/.claude");
+      
+      if (fs.existsSync(agentsSrc)) {
+        console.log("[INFO] Deploying agent rules to .agents...");
+        copyDir(agentsSrc, path.join(targetDir, ".agents"));
+      }
+      if (fs.existsSync(claudeSrc)) {
+        console.log("[INFO] Deploying Claude rules to .claude...");
+        copyDir(claudeSrc, path.join(targetDir, ".claude"));
       }
 
-      if (!fs.existsSync(srcDir)) {
-        console.error(`[ERROR] Source template at '${srcDir}' not found.`);
-        process.exit(1);
-      }
-
-      // 3. Scaffold files to current directory
-      console.log("[INFO] Scaffolding files into target workspace...");
-      copyDir(srcDir, targetDir);
-
-      // 4. Compile rules to .cursorrules
+      // 3. Compile rules to .cursorrules
       console.log("[INFO] Compiling rules to .cursorrules...");
-      const commonRulesPath = path.join(globalInstallDir, "core/rules/common/rules.md");
-      const codingRulesPath = path.join(globalInstallDir, "core/rules/coding/rules.md");
+      const commonRulesPath = path.join(localInstallDir, "core/rules/common/rules.md");
+      const codingRulesPath = path.join(localInstallDir, "core/rules/coding/rules.md");
       
       let mergedRules = "";
       if (fs.existsSync(commonRulesPath)) mergedRules += fs.readFileSync(commonRulesPath, "utf8") + "\n\n";
@@ -375,16 +310,34 @@ async function main() {
       
       fs.writeFileSync(path.join(targetDir, ".cursorrules"), mergedRules, "utf8");
 
-      // 5. Register MCP servers for all installed/detected agents
-      const mcpServerPath = path.join(globalInstallDir, "core/mcp/server.mjs");
-      registerAllInstalledMCP(mcpServerPath, targetDir);
+      // 4. Create LIEM_OS.md workspace indicator
+      console.log("[INFO] Creating LIEM_OS.md workspace indicator...");
+      const liemOsMdContent = `# Liem OS Workspace Active
+
+This project workspace is powered by Liem OS.
+
+## Active Components
+- **Rules Compiler**: Rules are managed in \`.agents/\` and compiled to \`.cursorrules\`.
+- **MCP Server**: Registered locally at \`./Liem OS/core/mcp/server.mjs\`.
+- **Agent Council**: Summonable via \`npx liem-os council --topic "<topic>"\`.
+
+## Using Liem OS
+Simply ask the Chief of Staff (Axel) directly in your AI editor (Cursor / Trae / Claude Desktop) chat window:
+- *"Axel, please run agent council to debate..."*
+- *"Axel, create a git worktree for my NLP experiment..."*
+`;
+      fs.writeFileSync(path.join(targetDir, "LIEM_OS.md"), liemOsMdContent, "utf8");
+
+      // 5. Register MCP servers for all installed/detected agents (locally in the workspace)
+      const mcpServerPath = path.join(localInstallDir, "core/mcp/server.mjs");
+      registerAllLocalMCP(mcpServerPath, targetDir);
 
       console.log("\n\x1b[32m==========================================\x1b[0m");
       console.log("\x1b[32mLiem OS Workspace Setup Completed!        \x1b[0m");
       console.log("\x1b[32m==========================================\x1b[0m");
       console.log(`\nOpen this folder in your AI editor (Cursor / VS Code / Trae).`);
       console.log(`Antigravity / Gemini will automatically load the rules from the '.agents' folder.`);
-      console.log(`Liem OS MCP server has been registered in all detected coding agents.`);
+      console.log(`Liem OS MCP server has been registered locally in this project.`);
       
       await checkUpdates();
       break;
@@ -404,9 +357,16 @@ async function main() {
       const absoluteTarget = path.resolve(target);
       console.log(`[INFO] Deploying template '${template}' to '${absoluteTarget}'...`);
 
+      const localInstallDir = path.join(process.cwd(), "Liem OS");
       const home = os.homedir();
       const globalInstallDir = path.join(home, ".liem-os");
-      const baseDir = fs.existsSync(globalInstallDir) ? globalInstallDir : PACKAGE_ROOT;
+      
+      let baseDir = PACKAGE_ROOT;
+      if (fs.existsSync(localInstallDir)) {
+        baseDir = localInstallDir;
+      } else if (fs.existsSync(globalInstallDir)) {
+        baseDir = globalInstallDir;
+      }
 
       let srcDir = "";
       if (template === "docs") {
