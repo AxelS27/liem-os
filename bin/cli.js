@@ -30,6 +30,7 @@ function printUsage() {
   console.log("  watchdog-recover            Automatically extract subagent transcripts and bypass harness hangs");
   console.log("  changelog                   Show the patch logs and version release history");
   console.log("  version                     Print the current local version and check for remote updates");
+  console.log("  update                      Actively check for updates and auto-update the workspace");
   console.log("\nOptions:");
   console.log("  --template <type>           monorepo (default) | docs | research | content");
 }
@@ -237,7 +238,7 @@ async function checkUpdates() {
   }
 }
 
-// Active check command with verbose status output
+// Active check command with verbose status output and auto-update
 async function checkUpdatesCommand() {
   try {
     const pkgPath = path.join(PACKAGE_ROOT, "package.json");
@@ -256,8 +257,16 @@ async function checkUpdatesCommand() {
       } else {
         console.log(`\n--- Update Available ---`);
         console.log(`A new version of Liem OS is available: v${remoteVersion} (Local: v${localVersion})`);
-        console.log(`To update, run: npx github:AxelS27/liem-os init`);
+        console.log(`[INFO] Automatically updating Liem OS to v${remoteVersion}...`);
         console.log(`-------------------------\n`);
+        
+        try {
+          execSync("npx -y github:AxelS27/liem-os init", { stdio: "inherit" });
+          console.log(`\n[SUCCESS] Liem OS has been successfully updated to v${remoteVersion}! 🎉`);
+        } catch (err) {
+          console.error(`[ERROR] Auto-update failed: ${err.message}`);
+          console.log(`Please run manually: npx github:AxelS27/liem-os init`);
+        }
       }
     } else {
       console.log("[WARNING] Unable to contact GitHub update registry.");
@@ -577,6 +586,7 @@ Simply ask the Chief of Staff (Axel) directly in your AI editor (Cursor / Trae /
       break;
     }
 
+    case "update":
     case "version": {
       printBanner();
       const pkgPath = path.join(PACKAGE_ROOT, "package.json");
