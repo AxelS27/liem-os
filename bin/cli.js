@@ -419,6 +419,55 @@ Simply ask the Chief of Staff (Axel) directly in your AI editor (Cursor / Trae /
       const mcpServerPath = path.join(localInstallDir, "core/mcp/server.mjs");
       registerAllLocalMCP(mcpServerPath, targetDir);
 
+      // 6. Install Token Optimizers automatically
+      console.log("\n[INFO] Installing recommended Token Optimizers...");
+      
+      // A. Install code-review-graph (local/active Python env)
+      console.log("[INFO] Installing code-review-graph via pip...");
+      const hasUv = (() => {
+        try { execSync("uv --version", { stdio: "ignore" }); return true; } catch { return false; }
+      })();
+      try {
+        if (hasUv) {
+          execSync("uv pip install code-review-graph", { stdio: "inherit" });
+        } else {
+          execSync("pip install code-review-graph", { stdio: "inherit" });
+        }
+        console.log("[SUCCESS] code-review-graph installed!");
+      } catch (err) {
+        console.warn("[WARNING] Failed to install code-review-graph automatically: " + err.message);
+      }
+
+      // B. Install token-optimizer (local)
+      console.log("[INFO] Installing token-optimizer...");
+      try {
+        if (usePnpm) {
+          execSync("pnpm add -D token-optimizer", { stdio: "inherit" });
+        } else {
+          execSync("npm install --save-dev token-optimizer", { stdio: "inherit" });
+        }
+        console.log("[SUCCESS] token-optimizer installed!");
+      } catch (err) {
+        console.warn("[WARNING] Failed to install token-optimizer automatically: " + err.message);
+      }
+
+      // C. Install RTK (global Cargo)
+      console.log("[INFO] Installing RTK (Rust Token Killer) globally...");
+      const hasCargo = (() => {
+        try { execSync("cargo --version", { stdio: "ignore" }); return true; } catch { return false; }
+      })();
+      if (hasCargo) {
+        try {
+          execSync("cargo install rtk", { stdio: "inherit" });
+          console.log("[SUCCESS] RTK installed globally!");
+        } catch (err) {
+          console.warn("[WARNING] Failed to install RTK globally: " + err.message);
+        }
+      } else {
+        console.warn("[WARNING] Cargo (Rust toolchain) not found. Skipping global RTK installation.");
+        console.warn("          Please install Rust and run: cargo install rtk");
+      }
+
       console.log("\n\x1b[32m==========================================\x1b[0m");
       console.log("\x1b[32mLiem OS Workspace Setup Completed!        \x1b[0m");
       console.log("\x1b[32m==========================================\x1b[0m");
