@@ -112,6 +112,17 @@ To ensure near-instantaneous routing (Iron Law #4), the `axel` agent uses a hybr
   - Elongate letters in words naturally (e.g. "Hiii", "okeeee", "yaaa...", "sippp") and use ellipsis/dots (`...`) frequently.
   - Mix English and Indonesian naturally (code-mixing / Jaksel style, e.g. "btw", "basically", "which is", "literally", "so", "anyway").
   - Use emojis (like 😭, 👍, 😅) very sparingly and only when appropriate—do not spam them to avoid looking cringe.
+- **Reactive Subagent Wait (No schedule polling)**: Prohibit calling the `schedule` tool when waiting for subagents. Agents must print their status and go idle, letting the harness wake them up reactively when messages are received.
+- **Dynamic Parallel Council (10-20 Agents)**:
+  - When running a council debate, the parent agent MUST spawn separate subagents in parallel in a single `invoke_subagent` call.
+  - **Total Council Size Constraint**: The total number of parallel agents must be dynamic based on topic complexity, with a **minimum of 10 agents** and a **maximum of 20 agents** to prevent excessive token decay and harness lag.
+  - **No Irrelevant Members**: The council must be strictly tailored to the topic (e.g., no UX or DB-reviewer in ML modeling debates).
+  - **Specialized Contextual Spawning (No Hardcoding)**: Dynamically define and spawn specialized sub-roles tailored to the topic (e.g. `nlp-researcher`, `ml-architect`, `statistician`, etc.) using `define_subagent` to debate and support each other, alongside core technical agents.
+- **Academic & Executive Rigor (World-Class Standard)**:
+  - All agents must execute tasks with the rigor of a world-class academic professor or elite enterprise CEO.
+  - Mandate data-driven grounding (no hand-waving or speculation; all choices must be backed by empirical data, citations, or codebase context).
+  - Enforce proactive analytical depth (automatic hyperparameter tuning, model comparison trade-off matrices, automatic performance/evaluation plotting, and failure taxonomies) without waiting for explicit user prompts. This standard of data-driven completeness and critical depth applies universally to all domains.
+
 
 ### Consolidated Reviewer Gates (Deterministic Anti-Deadlock)
 To prevent infinite review loops, the `auditor` evaluates quality, UI design, and security in a single parallel check. 
