@@ -1,0 +1,127 @@
+# Quality
+
+## Code Quality
+
+- Strict TypeScript (`strict: true`, no implicit `any`).
+- Lint + format must pass before commit (`turbo lint`).
+- One responsibility per file; functions do one thing.
+- For external libraries, frameworks, or APIs (Next.js, Supabase, Hono, Tailwind CSS, etc.), verify exact signatures and syntax via Context7 MCP queries before writing code.
+- No dead code, no commented-out blocks, no `console.log` in committed code.
+- Backend work follows `docs/engineering/BACKEND.md`; database work follows `docs/engineering/DATABASE.md` and keeps
+  the data model catalog current; payment work follows `docs/engineering/PAYMENTS.md`.
+- Use `pnpm run verify` as the default final gate. It runs lint, typecheck, and tests.
+
+## Docs Sync Audit
+
+Run `pnpm docs:check` when documentation changes, when initializing a new product from this
+template, and before calling a feature done if the feature touched docs.
+
+The docs are synchronized when:
+
+- `docs/guides/HOW_TO_USE_THIS_TEMPLATE.md` mentions every core doc.
+- `docs/engineering/PROGRESS.md` points to the relevant source docs instead of restating them.
+- Product scope changes are reflected in `docs/product/PRD.md` and `docs/product/FEATURES.md`.
+- Product-specific design changes are reflected in `docs/product/UI_UX.md`.
+- API changes are reflected in `docs/engineering/API.md` and `packages/types`.
+- Database changes are reflected in `supabase/migrations/`, `packages/types/src/database.types.ts`,
+  and the `docs/engineering/DATABASE.md` data model catalog.
+- Payment changes are reflected in `docs/engineering/PAYMENTS.md`.
+- Real architectural choices are appended to `docs/engineering/DECISIONS.md`.
+
+## UI Consistency
+
+- Frontend rendering, performance & design-craft rules: see `docs/engineering/FRONTEND.md`. Product-specific visual identity and UX direction: see `docs/product/UI_UX.md`. The bar is "professionally designed, human-made" - never AI-generic. Self-review UI work against the code-based double-check at the bottom of `docs/engineering/DESIGN_DNA.md` before calling it done (no rendering required).
+- Use shared UI primitives and design tokens before creating one-off styles, but do not
+  force every product into the same layout. Product-specific composition belongs in
+  `docs/product/UI_UX.md`; `docs/engineering/FRONTEND.md` is the guardrail.
+- Persistent navigation exists on every route and highlights the active route on desktop
+  and mobile with `aria-current="page"`.
+- Navigation has a visible background/surface treatment on every route. It is not invisible
+  floating text, and it stays readable across scroll positions and breakpoints.
+- Major route contexts are connected. Public, auth, and app shells link to each other where
+  appropriate; users are never trapped in a dashboard/app route with no clear way back to
+  the public/product home.
+- Every route has a context-appropriate footer or footer-equivalent endcap. Public, app,
+  and auth footers may differ, but none are omitted.
+- Pages use rich text and scannability patterns with restraint: useful emphasis, inline
+  links, captions, metadata, helper text, lists, and callouts where they clarify content.
+- UI work is checked for "card soup": cards/panels are not used as the default wrapper for
+  every shell, nav, filter bar, table/list, form, metric, and repeated item.
+- UI work is checked for a paper-prototype feel: repeated pale bordered rectangles, weak
+  one-note neutrals, faded imagery, quiet controls, and empty bands should not carry the
+  design.
+- Visible brand/logo treatment uses a real approved asset, the template icon, or a clean
+  wordmark. Do not ship invented initials tiles or generic placeholder marks as if they
+  were product branding.
+- Review responsive behavior by reading the breakpoint classes (`sm:`/`md:`/`lg:`) and container widths in the markup: confirm layouts adapt rather than just scaling, the hero is not card-wrapped or pushed below the fold, sections are open bands, and the footer is not exposed by sparse content. This is a code review, not a render.
+- Public-facing UI does not expose implementation details. No visible Supabase/Midtrans/Hono
+  stack labels, API health badges, response-time numbers, build IDs, environment names,
+  internal route names, or debug diagnostics unless the product itself is a developer/status
+  tool and the user explicitly asked for that surface.
+- Public/customer-facing UI does not show internal KPIs, admin counters, workflow coverage,
+  revenue summaries, stock alert counts, sample order values, performance targets, or other
+  operational data unless it directly helps that user's current task.
+
+## Performance Basics
+
+- No unnecessary re-renders (memoize where it measurably helps, not preemptively).
+- Lazy-load routes/heavy components.
+- Server: paginate list endpoints; never return unbounded results.
+
+## Security Basics
+
+- Validate every external input at the boundary with **Zod** (route handlers) before any logic runs.
+- Never trust client data or expose secrets to the frontend.
+- `.env` is git-ignored from the start; commit only `.env.example`, never `.env`.
+- Parameterized DB queries only - no string-built SQL.
+- **Supabase:** enable Row Level Security on every table.
+- **AI models:** call hosted models from `apps/server` only.
+
+## Definition of Done
+
+A task is done when:
+
+- [ ] Works as specified in PRD / task
+- [ ] Tests written and passing (logic + edge cases)
+- [ ] `pnpm run verify` passes (lint, typecheck, unit tests)
+- [ ] `pnpm docs:check` passes when docs changed or project docs were initialized
+- [ ] `pnpm knip` runs without unresolved imports or critical dead code
+- [ ] Playwright E2E tests pass (`pnpm test:e2e`) if UI, auth, or routing changed
+- [ ] Bundle budget size limit check passes (`pnpm --filter @repo/web size-limit`) if frontend bundle or dependencies changed
+- [ ] UI work: self-reviewed against the code-based double-check in `docs/engineering/DESIGN_DNA.md` (Part A greps + Part B file reading), with anything that missed fixed. No rendering required.
+- [ ] UI work (Claude Code): the `design-reviewer` agent returned PASS on the changes (see AGENTS.md Agent Routing). Other tools run the double-check above manually.
+- [ ] Route navigation is present and the current page/section is visibly active in
+      desktop and mobile nav (`aria-current="page"`)
+- [ ] Navbar/sidebar/bottom nav has a visible surface/background treatment on every route,
+      including public, app, auth, and mobile contexts
+- [ ] Public, auth, and app route contexts are connected; app/dashboard routes include a
+      clear path back to landing/product home
+- [ ] Footer/endcap is present on every public, app, and auth route with content suited to
+      that route context
+- [ ] Rich text/scannability was reviewed: useful emphasis, inline links, captions,
+      metadata, helper text, lists, or callouts exist where they improve comprehension
+- [ ] Card/surface usage was reviewed against `docs/product/UI_UX.md`; the page is not card-heavy
+      by default
+- [ ] Paper-prototype feel was reviewed: the page is not carried by pale bordered boxes,
+      weak one-note neutrals, faded imagery, quiet controls, or empty bands
+- [ ] Visible brand/logo treatment uses a real approved asset, the template icon, or a
+      clean wordmark, not an invented initials tile or generic placeholder mark
+- [ ] Public UI reviewed for implementation leaks: no provider names, health-check widgets,
+      latency metrics, build/environment labels, or debug diagnostics visible to real users
+- [ ] Public/customer-facing UI reviewed for audience-mismatched metrics: no internal KPIs,
+      admin counters, operational dashboards, seller workflow stats, revenue summaries, or
+      other data the user cannot act on
+- [ ] Every interactive component (button, input, card, link, toggle) has all required states: default, hover, focus, active/pressed, loading, disabled, error, and empty — each visibly distinct
+- [ ] Focus states use `focus-visible` rings (2px accent + 2px offset). No `outline: none` without a replacement
+- [ ] Animations only use GPU-composited properties (`transform`, `opacity`). No transitions on `width`, `height`, `top`, `left`, `margin`, or `padding`
+- [ ] All animation durations ≤ 800ms. A global `prefers-reduced-motion` rule exists in `globals.css` and is respected by every animated component
+- [ ] Loading skeletons match the exact shape of the real content (same height, same grid, shimmer animation, appear within 100ms of navigation)
+- [ ] Spacing follows the 4px grid. No arbitrary values like `10px`, `14px`, `18px`, `22px` in Tailwind classes or CSS
+- [ ] Typography uses max 3 font weights (`400`, `500/600`, `700`). Font sizes come from the defined scale; no intermediate sizes like `13px`, `15px`, `17px`, `18px`, `22px`
+- [ ] Matches naming & folder conventions (ARCHITECTURE.md)
+- [ ] API matches `docs/engineering/API.md` (if applicable)
+- [ ] Backend/database/payment work matches the relevant domain doc (`BACKEND.md`,
+      `DATABASE.md`, `PAYMENTS.md`)
+- [ ] Database work uses committed migrations, not dashboard-only changes
+- [ ] Version and Changelog: root `package.json` version is incremented and a scan-friendly, user-focused entry is appended to `CHANGELOG.md` matching `docs/engineering/VERSIONING.md`
+- [ ] Relevant doc updated if its domain changed

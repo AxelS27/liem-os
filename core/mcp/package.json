@@ -1,0 +1,14 @@
+{
+  "name": "liem-os-mcp",
+  "version": "1.0.0",
+  "description": "Universal MCP Server for Liem OS Core & Routing",
+  "type": "module",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --experimental-vm-modules tests/server.test.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.5.0"
+  }
+}

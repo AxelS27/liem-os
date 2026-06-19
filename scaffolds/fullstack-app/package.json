@@ -1,0 +1,98 @@
+{
+  "name": "liem-monorepo-template",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.5.3",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "verify": "pnpm lint && pnpm typecheck && pnpm test",
+    "lint": "turbo lint && biome lint .",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "docs:check": "node scripts/check-docs.mjs",
+    "db:diff": "supabase db diff",
+    "db:new": "supabase migration new",
+    "db:push": "supabase db push",
+    "db:reset": "supabase db reset",
+    "db:types": "supabase gen types typescript --local > packages/types/src/database.types.ts",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "knip": "knip",
+    "test:e2e": "pnpm --filter @repo/web test:e2e",
+    "size-limit": "pnpm --filter @repo/web size-limit",
+    "prepare": "husky"
+  },
+  "prettier": "@repo/config/prettier",
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.0",
+    "@repo/config": "workspace:*",
+    "eslint": "^10.4.1",
+    "husky": "^9.1.7",
+    "knip": "^6.16.1",
+    "lint-staged": "^17.0.7",
+    "prettier": "^3.8.0",
+    "prettier-plugin-tailwindcss": "^0.8.0",
+    "supabase": "^2.106.0",
+    "turbo": "^2.9.0",
+    "typescript": "^6.0.0"
+  },
+  "lint-staged": {
+    "**/*.{ts,tsx,js,mjs,json}": [
+      "biome check --write --no-errors-on-unmatched"
+    ],
+    "**/*.{md,css}": [
+      "prettier --write"
+    ]
+  },
+  "knip": {
+    "workspaces": {
+      "apps/web": {
+        "entry": [
+          "src/app/page.tsx",
+          "src/app/**/page.tsx",
+          "src/app/**/layout.tsx",
+          "src/middleware.ts"
+        ],
+        "project": [
+          "src/**/*.{ts,tsx}"
+        ]
+      },
+      "apps/server": {
+        "entry": [
+          "src/app.ts"
+        ],
+        "project": [
+          "src/**/*.ts"
+        ]
+      },
+      "packages/ui": {
+        "entry": [
+          "src/index.ts"
+        ],
+        "project": [
+          "src/**/*.{ts,tsx}"
+        ]
+      },
+      "packages/types": {
+        "entry": [
+          "src/index.ts"
+        ],
+        "project": [
+          "src/**/*.ts"
+        ]
+      },
+      "packages/utils": {
+        "entry": [
+          "src/index.ts"
+        ],
+        "project": [
+          "src/**/*.ts"
+        ]
+      }
+    }
+  }
+}

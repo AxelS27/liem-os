@@ -1,0 +1,239 @@
+/*
+ * Theme tokens: the single source of truth for color (Tailwind v4, CSS-first).
+ * There is no tailwind.config.ts - the @theme blocks below ARE the Tailwind config.
+ *
+ * Ship ONE theme first. The active theme lives in :root below (light by
+ * default). A dark theme (.dark) is provided commented out at the bottom;
+ * enable it only when the product actually needs dark mode, then wire
+ * next-themes (see docs/engineering/FRONTEND.md). Do not ship both on day one.
+ *
+ * To retheme or rebrand, edit the values in :root. Nothing else.
+ *
+ * Components must reference token classes (bg-background, text-foreground, ...),
+ * never raw hex or palette classes like bg-zinc-900.
+ */
+
+@import 'tailwindcss';
+
+/* The shared UI package lives outside this app, so point Tailwind's scanner at it. */
+@source '../../../../packages/ui/src';
+
+/* Dark mode is class-based. */
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+  :root {
+    /*
+     * Brand: this is a NEUTRAL PLACEHOLDER, not a finished palette. Shipping it
+     * untouched is the most common generic-AI tell - but so is reaching for whatever
+     * palette every AI demo currently defaults to. Avoid not just violet/indigo, but
+     * the other tired "AI starter" looks: emerald/forest green + cream/beige editorial,
+     * muted sage, the dark-purple "SaaS" gradient. Commit to a deliberate, product
+     * specific palette with a real accent and neutrals that carry a slight temperature,
+     * then replace these values. The shadcn-ui skill walks the steps; see docs/engineering/FRONTEND.md.
+     */
+    --brand: hsl(240 6% 10%);
+    --brand-foreground: hsl(0 0% 98%);
+
+    /* Surfaces. --background must stay white/neutral: 0 0% 100% or a near-neutral. */
+    --background: hsl(0 0% 100%);
+    --foreground: hsl(240 10% 4%);
+    --card: hsl(0 0% 100%);
+    --card-foreground: hsl(240 10% 4%);
+    --popover: hsl(0 0% 100%);
+    --popover-foreground: hsl(240 10% 4%);
+
+    /* Roles */
+    --primary: hsl(240 6% 10%);
+    --primary-foreground: hsl(0 0% 98%);
+    --secondary: hsl(240 5% 96%);
+    --secondary-foreground: hsl(240 6% 10%);
+    --accent: hsl(240 5% 96%);
+    --accent-foreground: hsl(240 6% 10%);
+    --muted: hsl(240 5% 96%);
+    --muted-foreground: hsl(240 4% 46%);
+
+    /* Feedback */
+    --destructive: hsl(0 72% 51%);
+    --destructive-foreground: hsl(0 0% 98%);
+
+    /* Lines and inputs */
+    --border: hsl(240 6% 90%);
+    --input: hsl(240 6% 90%);
+    --ring: hsl(240 10% 4%);
+
+    /* One knob for roundness across the UI */
+    --radius: 0.625rem;
+  }
+
+  /* Optional dark theme. */
+  .dark {
+    --brand: hsl(0 0% 98%);
+    --brand-foreground: hsl(240 10% 6%);
+
+    --background: hsl(240 10% 6%);
+    --foreground: hsl(240 5% 84%);
+    --card: hsl(240 10% 9%);
+    --card-foreground: hsl(240 5% 90%);
+    --popover: hsl(240 10% 9%);
+    --popover-foreground: hsl(240 5% 90%);
+
+    --primary: hsl(0 0% 98%);
+    --primary-foreground: hsl(240 10% 6%);
+    --secondary: hsl(240 5% 15%);
+    --secondary-foreground: hsl(240 5% 90%);
+    --accent: hsl(240 5% 15%);
+    --accent-foreground: hsl(0 0% 98%);
+    --muted: hsl(240 5% 12%);
+    --muted-foreground: hsl(240 5% 65%);
+
+    --destructive: hsl(0 62% 45%);
+    --destructive-foreground: hsl(0 0% 98%);
+
+    --border: hsl(240 5% 26%);
+    --input: hsl(240 5% 26%);
+    --ring: hsl(240 5% 65%);
+  }
+}
+
+/*
+ * Map the :root tokens to Tailwind utility names (bg-background, text-foreground, ...).
+ * "inline" makes utilities reference the var directly, so swapping a token value in
+ * :root (or a future .dark block) re-colors everything without a rebuild.
+ */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+
+  /* The real typeface is set as --font-jakarta by next/font in the root layout. */
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+}
+
+/*
+ * House type scale: tighter leading and tracking as sizes grow. This is the
+ * template's typographic identity - build hierarchy from these steps, not
+ * ad-hoc sizes. See docs/engineering/FRONTEND.md (Typography).
+ */
+@theme {
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.6;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.6;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.5;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 1.3;
+  --text-2xl--letter-spacing: -0.01em;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 1.2;
+  --text-3xl--letter-spacing: -0.02em;
+  --text-4xl: 2.5rem;
+  --text-4xl--line-height: 1.1;
+  --text-4xl--letter-spacing: -0.02em;
+  --text-5xl: 3.25rem;
+  --text-5xl--line-height: 1.05;
+  --text-5xl--letter-spacing: -0.03em;
+  --text-6xl: 4rem;
+  --text-6xl--line-height: 1;
+  --text-6xl--letter-spacing: -0.03em;
+}
+
+/* Base resets. */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    /*
+     * Bind the real typeface (set as --font-jakarta by next/font in the root layout)
+     * here too, so text never falls back to the browser default serif even before
+     * Tailwind utilities apply. Never ship the default font.
+     */
+    font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Custom Ticker Animation Utilities */
+.animate-ticker {
+  animation: ticker 40s linear infinite;
+}
+
+@keyframes ticker {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/* Custom Staggered Page Load Entry Animations */
+.animate-fade-slide-up {
+  animation: fade-slide-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+.animation-delay-0 {
+  animation-delay: 0ms;
+}
+.animation-delay-100 {
+  animation-delay: 100ms;
+}
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+.animation-delay-300 {
+  animation-delay: 300ms;
+}
+.animation-delay-400 {
+  animation-delay: 400ms;
+}
+
+@keyframes fade-slide-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-slide-up {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

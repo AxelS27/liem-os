@@ -1,0 +1,3 @@
+RTK: https://github.com/rtk-ai/rtk
+ECC: https://github.com/affaan-m/ECC/
+forge-rules: https://github.com/SIRAJcrypto11/forge-rules

@@ -1,0 +1,136 @@
+{
+  "app": {
+    "name": "Liem Monorepo",
+    "description": "An opinionated monorepo starter for building consistent, production-ready products."
+  },
+  "nav": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "signIn": "Sign in",
+    "getStarted": "Get started",
+    "menu": "Menu",
+    "support": "Support",
+    "themeLight": "Light",
+    "themeDark": "Dark"
+  },
+  "home": {
+    "metaTitle": "Home",
+    "eyebrow": "Product starter",
+    "headline": "A starter that keeps agents aligned from spec to ship.",
+    "subhead": "Liem gives every new product a clear plan, a consistent interface, and a focused path from first idea to first release.",
+    "exploreFeatures": "Explore features",
+    "viewPricing": "View pricing",
+    "stackHeading": "Built on tools you already know",
+    "features": {
+      "heading": "Everything wired, nothing generic",
+      "subheading": "The starter makes the decisions once, so each product builds features instead of boilerplate.",
+      "items": [
+        {
+          "title": "Typed end to end",
+          "detail": "Shared Zod contracts in packages/types keep the web and server from drifting."
+        },
+        {
+          "title": "Clean boundaries",
+          "detail": "Apps stay thin, packages stay shared, and imports cannot cross the lines by accident."
+        },
+        {
+          "title": "Design pre-wired",
+          "detail": "Tailwind tokens, shadcn, and a retuned reference button ship configured, not generic."
+        },
+        {
+          "title": "Fast by default",
+          "detail": "Turborepo caching, server components, and small client islands out of the box."
+        }
+      ]
+    },
+    "foundations": {
+      "heading": "One system, from the first route onward",
+      "subheading": "The starter sets the conventions so every page stays consistent as the product grows, instead of drifting screen by screen.",
+      "items": [
+        { "title": "Plan first", "detail": "Settle scope and structure before the first screen." },
+        {
+          "title": "Stay consistent",
+          "detail": "Every new page reuses the same system and patterns."
+        },
+        { "title": "Ship focused", "detail": "Launch with one clear next step for the user." }
+      ]
+    },
+    "cta": {
+      "heading": "Start your next product on a foundation that holds.",
+      "subheading": "Scaffold once, then build features with the conventions already in place.",
+      "getStarted": "Get started",
+      "seeFeatures": "See features"
+    }
+  },
+  "footer": {
+    "description": "An opinionated monorepo starter for building consistent, production-ready products without the boilerplate.",
+    "sections": {
+      "product": {
+        "title": "Product",
+        "features": "Features",
+        "pricing": "Pricing",
+        "changelog": "Changelog"
+      },
+      "resources": {
+        "title": "Resources",
+        "documentation": "Documentation",
+        "guides": "Guides",
+        "blog": "Blog"
+      },
+      "company": {
+        "title": "Company",
+        "about": "About",
+        "careers": "Careers",
+        "contact": "Contact"
+      }
+    },
+    "rights": "All rights reserved.",
+    "privacy": "Privacy",
+    "terms": "Terms"
+  },
+  "pages": {
+    "features": {
+      "metaTitle": "Features",
+      "eyebrow": "Features",
+      "title": "Features go here",
+      "description": "This route is scaffolded so the primary navigation points somewhere real. Replace it with the product's features page."
+    },
+    "pricing": {
+      "metaTitle": "Pricing",
+      "eyebrow": "Pricing",
+      "title": "Pricing goes here",
+      "description": "This route is scaffolded so the primary navigation points somewhere real. Replace it with the product's pricing page."
+    },
+    "signIn": {
+      "metaTitle": "Sign in",
+      "eyebrow": "Account",
+      "title": "Sign in",
+      "description": "Auth runs through Supabase Auth. Build the real sign-in form here. A product would also give auth routes a focused auth layout instead of the marketing shell (see docs/engineering/FRONTEND.md).",
+      "action": "Create an account"
+    },
+    "signUp": {
+      "metaTitle": "Get started",
+      "eyebrow": "Account",
+      "title": "Create your account",
+      "description": "Auth runs through Supabase Auth. Build the real sign-up form here. A product would also give auth routes a focused auth layout instead of the marketing shell (see docs/engineering/FRONTEND.md).",
+      "action": "I already have an account"
+    },
+    "contact": {
+      "metaTitle": "Support",
+      "eyebrow": "Support",
+      "title": "How can we help?",
+      "description": "This route is scaffolded so the header support link points somewhere real. Replace it with the product's support or contact page."
+    },
+    "notFound": {
+      "eyebrow": "404",
+      "title": "This page could not be found",
+      "description": "The page you are looking for does not exist or may have moved."
+    },
+    "backToHome": "Back to home"
+  },
+  "states": {
+    "loading": "Loading",
+    "empty": "Nothing here yet",
+    "error": "Something went wrong. Please try again."
+  }
+}
