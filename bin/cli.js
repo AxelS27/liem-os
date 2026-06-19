@@ -490,6 +490,47 @@ Simply ask the Chief of Staff (Axel) directly in your AI editor (Cursor / Trae /
         }
       }
 
+      // B.5. Set up virtual environment (.venv) locally in the workspace
+      console.log("\n[INFO] Setting up project-local virtual environment (.venv)...");
+      const venvPath = path.join(targetDir, ".venv");
+      let hasVenv = fs.existsSync(venvPath);
+
+      if (!hasVenv) {
+        try {
+          if (hasUv) {
+            const pythonVersionFlag = hasSystemPython ? "" : `--python ${pythonVersionToUse}`;
+            execSync(`${uvCmd} venv ${pythonVersionFlag}`, { stdio: "inherit" });
+          } else {
+            const pyCmd = isWin ? "python" : "python3";
+            execSync(`${pyCmd} -m venv .venv`, { stdio: "inherit" });
+          }
+          hasVenv = true;
+          console.log("[SUCCESS] .venv created successfully!");
+        } catch (err) {
+          console.warn("[WARNING] Failed to create virtual environment (.venv): " + err.message);
+        }
+      } else {
+        console.log("[INFO] Existing .venv detected.");
+      }
+
+      // B.6. Install required tools inside the local .venv (e.g. markitdown)
+      if (hasVenv) {
+        console.log("[INFO] Installing required tools (markitdown) inside .venv...");
+        try {
+          if (hasUv) {
+            execSync(`${uvCmd} pip install markitdown`, { stdio: "inherit" });
+          } else {
+            const pipPath = isWin
+              ? path.join(venvPath, "Scripts", "pip.exe")
+              : path.join(venvPath, "bin", "pip");
+            execSync(`"${pipPath}" install markitdown`, { stdio: "inherit" });
+          }
+          console.log("[SUCCESS] markitdown installed inside .venv!");
+        } catch (err) {
+          console.warn("[WARNING] Failed to install markitdown in .venv: " + err.message);
+        }
+      }
+
       // C. Install code-review-graph (user global/tool space)
       console.log("[INFO] Installing code-review-graph...");
       try {
