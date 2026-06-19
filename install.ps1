@@ -10,13 +10,12 @@ Write-Host "Current directory: $ScriptDir"
 
 # 1. Install Node.js MCP server dependencies
 Write-Host "Installing Node.js dependencies for MCP server..."
-Set-Location -Path "$ScriptDir\core\mcp"
+Set-Location -Path $ScriptDir
 if (Get-Command pnpm -ErrorAction SilentlyContinue) {
     pnpm install
 } else {
     npm install
 }
-Set-Location -Path $ScriptDir
 
 # 2. Check for Python & uv packages
 Write-Host "Checking Python package manager..."

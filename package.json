@@ -1,0 +1,17 @@
+{
+  "name": "liem-os",
+  "version": "1.0.0",
+  "description": "Liem OS - Autonomous multi-agent engineering workspace and MCP runtime bridge",
+  "type": "module",
+  "main": "core/mcp/server.mjs",
+  "bin": {
+    "liem-os": "./bin/cli.js"
+  },
+  "scripts": {
+    "start": "node core/mcp/server.mjs",
+    "test": "node tests/run-tests.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.5.0"
+  }
+}

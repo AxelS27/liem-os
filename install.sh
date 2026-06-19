@@ -10,13 +10,12 @@ echo "Current directory: $SCRIPT_DIR"
 
 # 1. Install Node.js MCP server dependencies
 echo "Installing Node.js dependencies for MCP server..."
-cd "$SCRIPT_DIR/core/mcp"
+cd "$SCRIPT_DIR"
 if command -v pnpm &> /dev/null; then
     pnpm install
 else
     npm install
 fi
-cd "$SCRIPT_DIR"
 
 # 2. Check for Python & uv packages
 echo "Checking Python package manager..."
