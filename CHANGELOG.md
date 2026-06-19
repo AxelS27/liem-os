@@ -15,4 +15,12 @@ All notable changes to Liem OS will be documented in this file.
 
 ## [0.0.1] - 2026-06-19
 
-- **Initial Release**: Core MCP server stdio bridge, 25 specialized agent files, automated project template scaffolding, Axel routing engine, and basic auditor audit gates.
+### Added
+- **Universal MCP Server stdio Bridge**: Exposes high-performance tools (`liem_os__route`, `liem_os__scaffold`, `liem_os__verify`, `liem_os__compact`, `liem_os__update`, etc.) directly to AI editors (Cursor, Trae, Windsurf, Claude Desktop).
+- **Deterministic Axel Router**: Routes plain language commands with 80% deterministic parsing (near-instantaneous) and 20% fallback LLM reasoning for multi-step tasks.
+- **25 Specialized Agent Personas**: Deploys 25 target-specific agent markdown files (e.g. Coder, Researcher, Auditor, Security, DevOps, Loop Operator) for specialized team debate.
+- **Auditor Quality Gates**: Deterministic linter checking for monolithic functions (Law #1), unverified claims (Law #2), and sister-module coupling (Law #3) with a hard-blocked 2-attempt limit.
+- **Automatic Scaffolding System**: Scaffolds complete standard project templates from scratch (VitePress documentation project, fullstack monorepo with Next.js/Supabase, research/content projects).
+- **Git Worktree Lifecycle Manager**: Spawns and cleans up Git worktrees for parallel task execution and isolated testing branches.
+- **Self-Improving Memory System**: Stages learned rules in scratch directory and consolidates them into permanent memories merged directly into active cursor rules.
+- **Active Context Throttler**: Warns and compiles context usage to prompt manual context compaction before exceeding limits.
