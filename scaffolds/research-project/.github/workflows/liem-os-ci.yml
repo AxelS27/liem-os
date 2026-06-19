@@ -1,0 +1,30 @@
+name: Liem OS Academic Rigor CI
+
+on:
+  push:
+    branches: [ main, master, dev ]
+  pull_request:
+    branches: [ main, master, dev ]
+
+jobs:
+  audit:
+    name: Verify Research & Academic Rigor
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Rigor Verification
+        run: |
+          if [ -f "Liem OS/bin/cli.js" ]; then
+            node "Liem OS/bin/cli.js" verify --all
+          else
+            echo "[WARNING] Liem OS is not initialized in this workspace. Skipping verification."
+          fi

@@ -10,6 +10,7 @@ import * as path from "path";
 import * as os from "os";
 import { execSync } from "child_process";
 import { fileURLToPath } from "url";
+import { runAudit } from "../core/mcp/verifier.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = path.resolve(__dirname, "..");
@@ -31,6 +32,8 @@ function printUsage() {
   console.log("  changelog                   Show the patch logs and version release history");
   console.log("  version                     Print the current local version and check for remote updates");
   console.log("  update                      Actively check for updates and auto-update the workspace");
+  console.log("  verify --file <p>           Audit a single file against Liem OS Quality Gates");
+  console.log("  verify --all                Audit all modified/untracked Git files in the workspace");
   console.log("\nOptions:");
   console.log("  --template <type>           monorepo (default) | docs | research | content");
 }
@@ -607,6 +610,85 @@ Simply ask the Chief of Staff (Axel) directly in your AI editor (Cursor / Trae /
         console.log("Changelog file not found.");
       }
       break;
+    }
+
+    case "verify": {
+      printBanner();
+      const fileArg = flags.file;
+      const allArg = flags.all || args.includes("--all");
+
+      if (!fileArg && !allArg) {
+        console.error("[ERROR] Missing parameters. Please specify --file <path> or --all.");
+        console.log("Usage:");
+        console.log("  npx liem-os verify --file <path-to-file>");
+        console.log("  npx liem-os verify --all");
+        process.exit(1);
+      }
+
+      const filesToAudit = [];
+
+      if (fileArg) {
+        const absPath = path.resolve(fileArg);
+        if (!fs.existsSync(absPath)) {
+          console.error(`[ERROR] File not found: ${absPath}`);
+          process.exit(1);
+        }
+        filesToAudit.push(absPath);
+      } else if (allArg) {
+        console.log("[INFO] Scanning for modified or untracked files in Git...");
+        try {
+          const statusOutput = execSync("git status --porcelain", { encoding: "utf8" });
+          const lines = statusOutput.trim().split("\n");
+          
+          for (const line of lines) {
+            if (!line) continue;
+            const filePath = line.substring(3).trim();
+            const absPath = path.resolve(filePath);
+            if (fs.existsSync(absPath) && fs.statSync(absPath).isFile()) {
+              filesToAudit.push(absPath);
+            }
+          }
+        } catch (err) {
+          console.error("[ERROR] Failed to run git status. Is this a Git repository?");
+          process.exit(1);
+        }
+      }
+
+      if (filesToAudit.length === 0) {
+        console.log("[SUCCESS] No files to verify.");
+        process.exit(0);
+      }
+
+      console.log(`[INFO] Auditing ${filesToAudit.length} file(s) against Liem OS Quality Gates...\n`);
+      let totalFailures = 0;
+
+      for (const file of filesToAudit) {
+        const relativeName = path.relative(process.cwd(), file);
+        try {
+          const content = fs.readFileSync(file, "utf8");
+          const failures = runAudit(content, file);
+          
+          if (failures.length === 0) {
+            console.log(`\x1b[32m[PASS]\x1b[0m ${relativeName}`);
+          } else {
+            console.log(`\x1b[31m[FAIL]\x1b[0m ${relativeName}`);
+            failures.forEach(f => console.log(`  - \x1b[33m${f}\x1b[0m`));
+            totalFailures += failures.length;
+          }
+        } catch (e) {
+          console.error(`\x1b[31m[ERROR]\x1b[0m Failed to audit ${relativeName}: ${e.message}`);
+          totalFailures += 1;
+        }
+      }
+
+      console.log(`\n==========================================`);
+      if (totalFailures === 0) {
+        console.log(`\x1b[32m[VERDICT] All audits passed successfully! (GO) \x1b[0m`);
+        process.exit(0);
+      } else {
+        console.log(`\x1b[31m[VERDICT] Quality Gate failed with ${totalFailures} error(s). (NO-GO) \x1b[0m`);
+        process.exit(1);
+      }
     }
 
     default: {

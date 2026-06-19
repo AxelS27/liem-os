@@ -10,6 +10,7 @@ import { fileURLToPath } from "url";
 import { createWorktree, removeWorktree, listWorktrees } from "./worktree.mjs";
 import { prepareCouncil, formatSummonsInstructions } from "./council.mjs";
 import { estimateTokens } from "./token_estimator.mjs";
+import { runAudit } from "./verifier.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -577,48 +578,7 @@ Recommended breakdown:
 
         // Run some basic validation checks
         const content = fs.readFileSync(normalizedPath, "utf8");
-        const failures = [];
-
-        // Check Law #1 (Monolithic functions - quick heuristic check)
-        const functions = content.match(/function\s+\w+\s*\(|const\s+\w+\s*=\s*(async\s*)?\([^)]*\)\s*=>/g) || [];
-        if (functions.length > 10 && content.length > 15000) {
-          failures.push("Law #1 Violation: File might be too large/monolithic (functions > 10 & bytes > 15KB).");
-        }
-
-        // Check Law #2 (Hallucinated claims/comments)
-        if (content.includes("120K+ users") || content.includes("120,000 users")) {
-          failures.push("Law #2 Violation: Unverified marketing claim detected ('120K+ users').");
-        }
-
-        // Check Law #3 (Direct cross-import coupling between sibling directories in Liem OS)
-        if (normalizedPath.includes("core/agents") && /import.*from.*(axel|auditor|coder|researcher|writer|strategist|operator)\.md/.test(content)) {
-          failures.push("Law #3 Violation: Direct coupling between agent personas.");
-        }
-
-        // Check hardcoded credentials
-        if (/(password|secret|api_key|token|private_key)\s*=\s*['"`][a-zA-Z0-9_\-]{8,}['"`]/i.test(content)) {
-          failures.push("Security Check: Potential hardcoded secret or credential detected.");
-        }
-
-        // Check Academic & Research Markdown Rigor
-        const ext = path.extname(normalizedPath).toLowerCase();
-        if (ext === ".md") {
-          const isResearch = normalizedPath.toLowerCase().includes("research") || 
-                             normalizedPath.toLowerCase().includes("academic") || 
-                             normalizedPath.toLowerCase().includes("synthesis") || 
-                             normalizedPath.toLowerCase().includes("outline");
-          if (isResearch) {
-            const doiMatches = content.match(/10\.\d{4,9}\/[-._;()/:A-Z0-9]+/gi) || [];
-            const urlMatches = content.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi) || [];
-            
-            const uniqueDois = [...new Set(doiMatches)];
-            const uniqueUrls = [...new Set(urlMatches.map(u => u.toLowerCase()))];
-
-            if (uniqueDois.length < 5 || uniqueUrls.length < 5) {
-              failures.push(`Academic Rigor Violation: Research documentation must contain at least 5 verified journal/paper citations with clickable URLs and official DOIs. Found ${uniqueDois.length} unique DOIs and ${uniqueUrls.length} unique URLs.`);
-            }
-          }
-        }
+        const failures = runAudit(content, normalizedPath);
 
         // Hard Block check
         if (failures.length > 0) {
