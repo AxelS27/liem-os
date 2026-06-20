@@ -1,6 +1,6 @@
 {
   "name": "liem-os",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Liem OS - Autonomous multi-agent engineering workspace and MCP runtime bridge",
   "type": "module",
   "main": "core/mcp/server.mjs",
