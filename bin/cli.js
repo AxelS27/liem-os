@@ -209,14 +209,14 @@ function registerAllLocalMCP(serverPath, targetDir) {
   registerCodexMCP(codexPath, serverPath);
 }
 
-// Check for updates against GitHub
+// Check for updates against npm
 async function checkUpdates() {
   try {
     const pkgPath = path.join(PACKAGE_ROOT, "package.json");
     if (!fs.existsSync(pkgPath)) return;
     const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
     const localVersion = pkg.version;
-    const remoteUrl = "https://raw.githubusercontent.com/AxelS27/liem-os/main/Liem%20OS/package.json";
+    const remoteUrl = "https://registry.npmjs.org/liem-os/latest";
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 1500);
@@ -229,7 +229,7 @@ async function checkUpdates() {
       if (remoteVersion && remoteVersion !== localVersion) {
         console.log(`\n--- Update Available ---`);
         console.log(`A new version of Liem OS is available: v${remoteVersion} (Local: v${localVersion})`);
-        console.log(`To update, run: npx github:AxelS27/liem-os init`);
+        console.log(`To update, run: npx liem-os init`);
         console.log(`-------------------------\n`);
       }
     }
@@ -245,9 +245,9 @@ async function checkUpdatesCommand() {
     if (!fs.existsSync(pkgPath)) return;
     const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
     const localVersion = pkg.version;
-    const remoteUrl = "https://raw.githubusercontent.com/AxelS27/liem-os/main/Liem%20OS/package.json";
+    const remoteUrl = "https://registry.npmjs.org/liem-os/latest";
 
-    console.log("Connecting to GitHub update registry...");
+    console.log("Connecting to npm update registry...");
     const response = await fetch(remoteUrl);
     if (response.ok) {
       const data = await response.json();
@@ -261,15 +261,15 @@ async function checkUpdatesCommand() {
         console.log(`-------------------------\n`);
         
         try {
-          execSync("npx -y github:AxelS27/liem-os init", { stdio: "inherit" });
+          execSync("npx -y liem-os init", { stdio: "inherit" });
           console.log(`\n[SUCCESS] Liem OS has been successfully updated to v${remoteVersion}! 🎉`);
         } catch (err) {
           console.error(`[ERROR] Auto-update failed: ${err.message}`);
-          console.log(`Please run manually: npx github:AxelS27/liem-os init`);
+          console.log(`Please run manually: npx liem-os init`);
         }
       }
     } else {
-      console.log("[WARNING] Unable to contact GitHub update registry.");
+      console.log("[WARNING] Unable to contact npm update registry.");
     }
   } catch (e) {
     console.log("[ERROR] Could not check for updates. Please check your internet connection.");
