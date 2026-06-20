@@ -239,6 +239,65 @@
               <!-- Debate items populated dynamically -->
             </div>
           </div>
+      <!-- Row 3: Agent Council Chamber -->
+      <section class="card glass council-card col-span-2">
+        <div class="card-header">
+          <i data-lucide="users" class="header-icon rose-glow"></i>
+          <h2>Agent Council Chamber</h2>
+        </div>
+        <div class="card-body">
+          <p class="desc">Summon a panel of AI agents to debate a topic and compile a synthesized consensus report.</p>
+          <div class="council-controls">
+            <div class="input-group">
+              <input type="text" id="council-topic-input" placeholder="Enter topic to debate..." value="Designing a secure multi-tenant database schema with Supabase Row-Level Security (RLS) policies">
+              <button id="btn-summon-council" class="btn btn-rose">
+                <span>Summon Council</span>
+                <i data-lucide="send"></i>
+              </button>
+            </div>
+            <div class="member-selector">
+              <label>Select Council Members:</label>
+              <div class="member-chips" id="member-chips">
+                <span class="chip active" data-member="strategist">Strategist</span>
+                <span class="chip active" data-member="architect">Architect</span>
+                <span class="chip active" data-member="security">Security</span>
+                <span class="chip active" data-member="coder">Coder</span>
+                <span class="chip active" data-member="auditor">Auditor</span>
+                <span class="chip" data-member="researcher">Researcher</span>
+                <span class="chip" data-member="writer">Writer</span>
+                <span class="chip" data-member="designer">Designer</span>
+                <span class="chip" data-member="tester">Tester</span>
+                <span class="chip" data-member="operator">Operator</span>
+                <span class="chip" data-member="planner">Planner</span>
+                <span class="chip" data-member="build-resolver">Build Resolver</span>
+                <span class="chip" data-member="database-reviewer">Database Reviewer</span>
+                <span class="chip" data-member="performance-optimizer">Performance Optimizer</span>
+                <span class="chip" data-member="loop-operator">Loop Operator</span>
+                <span class="chip" data-member="devops">DevOps</span>
+                <span class="chip" data-member="browser">Browser</span>
+                <span class="chip" data-member="consensus-coordinator">Consensus Coordinator</span>
+                <span class="chip" data-member="ux">UX Strategist</span>
+                <span class="chip" data-member="a11y">A11y Expert</span>
+                <span class="chip" data-member="api-architect">API Architect</span>
+                <span class="chip" data-member="deep-researcher">Deep Researcher</span>
+                <span class="chip" data-member="growth-agent">Growth Agent</span>
+                <span class="chip" data-member="ceo">CEO</span>
+              </div>
+            </div>
+          </div>
+          <div id="council-loading" class="loading-state hidden">
+            <div class="spinner-rose"></div>
+            <span>Summoning council and starting debate...</span>
+          </div>
+          <div id="council-debate-box" class="output-box hidden">
+            <div class="output-header">
+              <span class="badge badge-rose">COUNCIL CONSENSUS REPORT</span>
+              <span class="timestamp" id="council-timestamp">just now</span>
+            </div>
+            <div class="debate-transcript" id="debate-transcript">
+              <!-- Debate items populated dynamically -->
+            </div>
+          </div>
         </div>
       </section>
     </main>

@@ -45,7 +45,7 @@ _Note on template placeholders:_
   - Verification passed (no re-installation needed).
 - **Context7 MCP Server** pending details:
   - Official website: https://context7.com
-  - Installation guide: [CONTEXT7.md](docs/guides/CONTEXT7.md)
+  - Installation guide: [CONTEXT7.md](file:///d:/Liem%20Product/Liem%20Monorepo/docs/guides/CONTEXT7.md)
   - Run in your terminal: `npx ctx7 setup`
 - **Context7 MCP Server** completed details:
   - Official website: https://context7.com
@@ -288,6 +288,7 @@ These five rules are supreme. They override all other decisions. If anything con
 - ✅ If `docs/product/PRD.md` is still a blank template, ask the user for scope before building features - don't invent it
 - ✅ For product UI work, read `docs/engineering/DESIGN_DNA.md` first, then fill or update `docs/product/UI_UX.md` from the user's design direction. The starter UI (`apps/web/`) is the **design foundation** — build on it. Change the accent palette (keep background white), content, and routes per product. Only deviate from the open-band layout structure when `docs/product/UI_UX.md` explicitly calls for a different composition.
 - ✅ For a known product vertical, read the matching `docs/verticals/*.md` playbook first and use it to fill `docs/product/UI_UX.md`. The playbook informs the product brief; it does not override `docs/engineering/FRONTEND.md`.
+- ✅ If the user provides a PRD/brief for an e-commerce or marketplace project, audit the PRD against the feature sets and architecture guidelines documented in [ECOMMERCE.md](file:///d:/Liem%20OS%20%28mega-project%29/Liem%20OS/scaffolds/fullstack-app/docs/verticals/ECOMMERCE.md). If there are gaps (e.g., features in ECOMMERCE.md such as vouchers, payment/shipping simulations, role dropdowns, or dashboards that are missing or not specified in the user's PRD), list these extra features clearly, ask the user if they should be incorporated into the project PRD as completions, and obtain user approval before generating code.
 - ✅ Start the app at a real landing page with a navbar and footer; only protected routes redirect to sign in (see `docs/engineering/FRONTEND.md`)
 - ✅ Keep public, auth, app, and mobile navigation visible, route-aware, and connected: nav has a surface/background, active links use `aria-current="page"`, app routes can get back to public/product home, and every route has a context-aware footer/endcap.
 - ✅ Use rich text with restraint where it improves scanning: useful emphasis, inline links, captions, metadata, helper text, short lists, and callouts. Do not make pages flat plaintext or decorative markdown clutter.

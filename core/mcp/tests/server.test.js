@@ -338,6 +338,14 @@ function testScaffoldingSystem() {
   assert.ok(fs.existsSync(path.join(contentTarget, "brief.md")));
   assert.ok(fs.existsSync(path.join(contentTarget, "calendar/.gitkeep")));
 
+  // 5.4 Test fullstack-app template
+  const fullstackSrc = path.join(LIEM_OS_DIR, "scaffolds/fullstack-app");
+  const fullstackTarget = path.join(testTargetDir, "fullstack_test");
+  if (fs.existsSync(fullstackTarget)) fs.rmSync(fullstackTarget, { recursive: true, force: true });
+  copyDir(fullstackSrc, fullstackTarget);
+  assert.ok(fs.existsSync(path.join(fullstackTarget, "package.json")));
+  assert.ok(fs.existsSync(path.join(fullstackTarget, "pnpm-workspace.yaml")));
+
   // Clean up
   if (fs.existsSync(testTargetDir)) fs.rmSync(testTargetDir, { recursive: true, force: true });
 

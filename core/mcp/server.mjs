@@ -9,8 +9,8 @@ import * as path from "path";
 import { fileURLToPath } from "url";
 import { createWorktree, removeWorktree, listWorktrees } from "./worktree.mjs";
 import { prepareCouncil, formatSummonsInstructions } from "./council.mjs";
-import { estimateTokens } from "./token_estimator.mjs";
-import { runAudit } from "./verifier.mjs";
+import { createWorktree, removeWorktree, listWorktrees } from "./worktree.mjs";
+import { prepareCouncil, formatSummonsInstructions } from "./council.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -71,8 +71,177 @@ function calculateContextMetrics() {
 
     if (fs.existsSync(transcriptPath)) {
       try {
-        const text = fs.readFileSync(transcriptPath, "utf8");
-        used = estimateTokens(text);
+        const stats = fs.statSync(transcriptPath);
+        // Approximation: 1 token is roughly 3.5 bytes of JSON transcript
+        used = Math.round(stats.size / 3.5);
+      }
+
+      case "liem_os__worktree_create": {
+        const { branchName, targetPath } = args;
+        const resolvedPath = path.isAbsolute(targetPath) 
+          ? targetPath 
+          : path.resolve(WORKSPACE_ROOT, targetPath);
+
+        try {
+          const result = createWorktree(branchName, resolvedPath, WORKSPACE_ROOT);
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Successfully created Git worktree at '${resolvedPath}' checking out branch '${branchName}'.\nOutput:\n${result}${metrics}`,
+              },
+            ],
+          };
+        } catch (e) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Failed to create Git worktree: ${e.message}${metrics}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+
+      case "liem_os__worktree_cleanup": {
+        const { targetPath } = args;
+        const resolvedPath = path.isAbsolute(targetPath) 
+          ? targetPath 
+          : path.resolve(WORKSPACE_ROOT, targetPath);
+
+        try {
+          const result = removeWorktree(resolvedPath, WORKSPACE_ROOT);
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Successfully removed Git worktree at '${resolvedPath}'.\nOutput:\n${result}${metrics}`,
+              },
+            ],
+          };
+        } catch (e) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Failed to clean up Git worktree: ${e.message}${metrics}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+
+      case "liem_os__council": {
+        const { topic, members, mode = "debate" } = args;
+        try {
+          const agenda = prepareCouncil(topic, members, mode);
+          const instructions = formatSummonsInstructions(agenda);
+          return {
+            content: [
+              {
+                type: "text",
+                text: instructions + metrics
+              }
+            ]
+          };
+        } catch (e) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Failed to summon Agent Council: ${e.message}${metrics}`
+              }
+            ],
+            isError: true
+          };
+        }
+      }
+
+      case "liem_os__worktree_create": {
+        const { branchName, targetPath } = args;
+        const resolvedPath = path.isAbsolute(targetPath) 
+          ? targetPath 
+          : path.resolve(WORKSPACE_ROOT, targetPath);
+
+        try {
+          const result = createWorktree(branchName, resolvedPath, WORKSPACE_ROOT);
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Successfully created Git worktree at '${resolvedPath}' checking out branch '${branchName}'.\nOutput:\n${result}${metrics}`,
+              },
+            ],
+          };
+        } catch (e) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Failed to create Git worktree: ${e.message}${metrics}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+
+      case "liem_os__worktree_cleanup": {
+        const { targetPath } = args;
+        const resolvedPath = path.isAbsolute(targetPath) 
+          ? targetPath 
+          : path.resolve(WORKSPACE_ROOT, targetPath);
+
+        try {
+          const result = removeWorktree(resolvedPath, WORKSPACE_ROOT);
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Successfully removed Git worktree at '${resolvedPath}'.\nOutput:\n${result}${metrics}`,
+              },
+            ],
+          };
+        } catch (e) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Failed to clean up Git worktree: ${e.message}${metrics}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+
+      case "liem_os__council": {
+        const { topic, members, mode = "debate" } = args;
+        try {
+          const agenda = prepareCouncil(topic, members, mode);
+          const instructions = formatSummonsInstructions(agenda);
+          return {
+            content: [
+              {
+                type: "text",
+                text: instructions + metrics
+              }
+            ]
+          };
+        } catch (e) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Failed to summon Agent Council: ${e.message}${metrics}`
+              }
+            ],
+            isError: true
+          };
+        }
       } catch (e) {
         used = 1000; // fallback estimate
       }
@@ -84,86 +253,6 @@ function calculateContextMetrics() {
 
   const pct = ((used / limit) * 100).toFixed(1);
   return `\n\n[CONTEXT_METRICS: ${used}/${limit} (${pct}%)]`;
-}
-
-// Compile rules dynamically with RAG-based filtering using activeFiles
-function compileRules(activeFiles = []) {
-  const commonRulesPath = path.join(LIEM_OS_DIR, "core/rules/common/rules.md");
-  const codingRulesPath = path.join(LIEM_OS_DIR, "core/rules/coding/rules.md");
-  let mergedRules = "# Compiled Cursor Rules for Liem OS\n\n";
-
-  if (fs.existsSync(commonRulesPath)) {
-    mergedRules += fs.readFileSync(commonRulesPath, "utf8") + "\n\n";
-  }
-
-  // Include coding rules if activeFiles is empty, or if there is any code-related file active
-  let includeCodingRules = true;
-  if (activeFiles && activeFiles.length > 0) {
-    const codeExtensions = [".js", ".mjs", ".cjs", ".ts", ".tsx", ".jsx", ".py", ".go", ".rs", ".java", ".cpp", ".c", ".h", ".cs", ".kt", ".rb", ".php", ".sh", ".ps1"];
-    includeCodingRules = activeFiles.some(f => {
-      const ext = path.extname(f).toLowerCase();
-      return codeExtensions.includes(ext) || f.toLowerCase().includes("/core/") || f.toLowerCase().includes("/src/") || f.toLowerCase().includes("rules");
-    });
-  }
-
-  if (includeCodingRules && fs.existsSync(codingRulesPath)) {
-    mergedRules += fs.readFileSync(codingRulesPath, "utf8") + "\n\n";
-  }
-
-  // Read all approved memories and filter using keyword matches
-  const memoryApprovedDir = path.join(LIEM_OS_DIR, "core/memory/approved");
-  if (fs.existsSync(memoryApprovedDir)) {
-    const files = fs.readdirSync(memoryApprovedDir);
-    let memorySectionAdded = false;
-
-    for (const file of files) {
-      if (file.endsWith(".json")) {
-        try {
-          const approvedData = JSON.parse(fs.readFileSync(path.join(memoryApprovedDir, file), "utf8"));
-          
-          let includePattern = true;
-          if (activeFiles && activeFiles.length > 0) {
-            includePattern = activeFiles.some(f => {
-              const fileLower = f.toLowerCase();
-              const nameLower = (approvedData.name || "").toLowerCase();
-              const descLower = (approvedData.description || "").toLowerCase();
-              
-              if (nameLower.includes("db") || nameLower.includes("sql") || nameLower.includes("database") || nameLower.includes("postgres")) {
-                if (fileLower.includes("db") || fileLower.includes("sql") || fileLower.includes("schema") || fileLower.includes("model")) return true;
-              }
-              if (nameLower.includes("ui") || nameLower.includes("react") || nameLower.includes("frontend") || nameLower.includes("css") || nameLower.includes("style")) {
-                if (fileLower.includes("tsx") || fileLower.includes("jsx") || fileLower.includes("css") || fileLower.includes("html") || fileLower.includes("web")) return true;
-              }
-              if (nameLower.includes("test") || nameLower.includes("jest") || nameLower.includes("playwright") || nameLower.includes("vitest")) {
-                if (fileLower.includes("test") || fileLower.includes("spec")) return true;
-              }
-              
-              const ext = path.extname(f).toLowerCase().replace(".", "");
-              if (ext && (nameLower.includes(ext) || descLower.includes(ext))) {
-                return true;
-              }
-
-              return nameLower.includes(fileLower) || fileLower.includes(nameLower);
-            });
-          }
-
-          if (includePattern) {
-            if (!memorySectionAdded) {
-              mergedRules += "# Approved Self-Learned Rules\n\n";
-              memorySectionAdded = true;
-            }
-            mergedRules += `## Pattern: ${approvedData.name}\nDescription: ${approvedData.description}\n\n${approvedData.rules}\n\n`;
-          }
-        } catch (e) {
-          // Ignore corrupt memory JSON files
-        }
-      }
-    }
-  }
-
-  const cursorRulesDest = path.join(WORKSPACE_ROOT, ".cursorrules");
-  fs.writeFileSync(cursorRulesDest, mergedRules, "utf8");
-  return cursorRulesDest;
 }
 
 // Instantiate server
@@ -250,15 +339,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         description: "Performs dynamic upstream rule synchronization and compiles cursorrules.",
         inputSchema: {
           type: "object",
-          properties: {
-            activeFiles: {
-              type: "array",
-              items: {
-                type: "string"
-              },
-              description: "Optional list of active or open files in the editor to prune rules dynamically."
-            }
-          },
+          properties: {},
         },
       },
       {
@@ -296,16 +377,41 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             targetDomain: {
               type: "string",
               description: "Target domain to merge to ('coding', 'writing', 'common', 'approved'). Default is 'approved'."
-            },
-            activeFiles: {
-              type: "array",
-              items: {
-                type: "string"
-              },
-              description: "Optional list of active or open files to recompile rules with RAG pruning."
             }
           },
           required: ["patternName"]
+        }
+      },
+      {
+        name: "liem_os__worktree_create",
+        description: "Spawns a new Git worktree for isolated parallel task execution.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            branchName: {
+              type: "string",
+              description: "The Git branch name to create or switch to."
+            },
+            targetPath: {
+              type: "string",
+              description: "Absolute or relative directory path where the worktree should be placed."
+            }
+          },
+          required: ["branchName", "targetPath"]
+        }
+      },
+      {
+        name: "liem_os__worktree_cleanup",
+        description: "Cleans up and removes an existing Git worktree directory.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            targetPath: {
+              type: "string",
+              description: "Absolute or relative directory path of the worktree to remove."
+            }
+          },
+          required: ["targetPath"]
         }
       },
       {
@@ -459,6 +565,122 @@ Recommended breakdown:
         };
       }
 
+      case "liem_os__worktree_create": {
+        const { branchName, targetPath } = args;
+        const resolvedPath = path.isAbsolute(targetPath) 
+          ? targetPath 
+          : path.resolve(WORKSPACE_ROOT, targetPath);
+
+        try {
+          const result = createWorktree(branchName, resolvedPath, WORKSPACE_ROOT);
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Successfully created Git worktree at '${resolvedPath}' checking out branch '${branchName}'.\nOutput:\n${result}${metrics}`,
+              },
+            ],
+          };
+        } catch (e) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Failed to create Git worktree: ${e.message}${metrics}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+
+      case "liem_os__worktree_cleanup": {
+        const { targetPath } = args;
+        const resolvedPath = path.isAbsolute(targetPath) 
+          ? targetPath 
+          : path.resolve(WORKSPACE_ROOT, targetPath);
+
+        try {
+          const result = removeWorktree(resolvedPath, WORKSPACE_ROOT);
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Successfully removed Git worktree at '${resolvedPath}'.\nOutput:\n${result}${metrics}`,
+              },
+            ],
+          };
+        } catch (e) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Failed to clean up Git worktree: ${e.message}${metrics}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+
+      case "liem_os__worktree_create": {
+        const { branchName, targetPath } = args;
+        const resolvedPath = path.isAbsolute(targetPath) 
+          ? targetPath 
+          : path.resolve(WORKSPACE_ROOT, targetPath);
+
+        try {
+          const result = createWorktree(branchName, resolvedPath, WORKSPACE_ROOT);
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Successfully created Git worktree at '${resolvedPath}' checking out branch '${branchName}'.\nOutput:\n${result}${metrics}`,
+              },
+            ],
+          };
+        } catch (e) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Failed to create Git worktree: ${e.message}${metrics}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+
+      case "liem_os__worktree_cleanup": {
+        const { targetPath } = args;
+        const resolvedPath = path.isAbsolute(targetPath) 
+          ? targetPath 
+          : path.resolve(WORKSPACE_ROOT, targetPath);
+
+        try {
+          const result = removeWorktree(resolvedPath, WORKSPACE_ROOT);
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Successfully removed Git worktree at '${resolvedPath}'.\nOutput:\n${result}${metrics}`,
+              },
+            ],
+          };
+        } catch (e) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Failed to clean up Git worktree: ${e.message}${metrics}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+
       case "liem_os__scaffold": {
         const { projectName, targetPath, template = "monorepo" } = args;
         const normalizedTarget = path.resolve(targetPath);
@@ -578,7 +800,48 @@ Recommended breakdown:
 
         // Run some basic validation checks
         const content = fs.readFileSync(normalizedPath, "utf8");
-        const failures = runAudit(content, normalizedPath);
+        const failures = [];
+
+        // Check Law #1 (Monolithic functions - quick heuristic check)
+        const functions = content.match(/function\s+\w+\s*\(|const\s+\w+\s*=\s*(async\s*)?\([^)]*\)\s*=>/g) || [];
+        if (functions.length > 10 && content.length > 15000) {
+          failures.push("Law #1 Violation: File might be too large/monolithic (functions > 10 & bytes > 15KB).");
+        }
+
+        // Check Law #2 (Hallucinated claims/comments)
+        if (content.includes("120K+ users") || content.includes("120,000 users")) {
+          failures.push("Law #2 Violation: Unverified marketing claim detected ('120K+ users').");
+        }
+
+        // Check Law #3 (Direct cross-import coupling between sibling directories in Liem OS)
+        if (normalizedPath.includes("core/agents") && /import.*from.*(axel|auditor|coder|researcher|writer|strategist|operator)\.md/.test(content)) {
+          failures.push("Law #3 Violation: Direct coupling between agent personas.");
+        }
+
+        // Check hardcoded credentials
+        if (/(password|secret|api_key|token|private_key)\s*=\s*['"`][a-zA-Z0-9_\-]{8,}['"`]/i.test(content)) {
+          failures.push("Security Check: Potential hardcoded secret or credential detected.");
+        }
+
+        // Check Academic & Research Markdown Rigor
+        const ext = path.extname(normalizedPath).toLowerCase();
+        if (ext === ".md") {
+          const isResearch = normalizedPath.toLowerCase().includes("research") || 
+                             normalizedPath.toLowerCase().includes("academic") || 
+                             normalizedPath.toLowerCase().includes("synthesis") || 
+                             normalizedPath.toLowerCase().includes("outline");
+          if (isResearch) {
+            const doiMatches = content.match(/10\.\d{4,9}\/[-._;()/:A-Z0-9]+/gi) || [];
+            const urlMatches = content.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi) || [];
+            
+            const uniqueDois = [...new Set(doiMatches)];
+            const uniqueUrls = [...new Set(urlMatches.map(u => u.toLowerCase()))];
+
+            if (uniqueDois.length < 5 || uniqueUrls.length < 5) {
+              failures.push(`Academic Rigor Violation: Research documentation must contain at least 5 verified journal/paper citations with clickable URLs and official DOIs. Found ${uniqueDois.length} unique DOIs and ${uniqueUrls.length} unique URLs.`);
+            }
+          }
+        }
 
         // Hard Block check
         if (failures.length > 0) {
@@ -637,8 +900,8 @@ Recommended breakdown:
 
           if (fs.existsSync(transcriptPath)) {
             try {
-              const text = fs.readFileSync(transcriptPath, "utf8");
-              used = estimateTokens(text);
+              const stats = fs.statSync(transcriptPath);
+              used = Math.round(stats.size / 3.5);
             } catch (e) {
               used = 1000;
             }
@@ -661,14 +924,44 @@ Recommended breakdown:
       }
 
       case "liem_os__update": {
-        const { activeFiles = [] } = args;
-        const cursorRulesDest = compileRules(activeFiles);
+        // Compile cursor rules from common rules and coding rules
+        const commonRulesPath = path.join(LIEM_OS_DIR, "core/rules/common/rules.md");
+        const codingRulesPath = path.join(LIEM_OS_DIR, "core/rules/coding/rules.md");
+        let mergedRules = "# Compiled Cursor Rules for Liem OS\n\n";
+
+        if (fs.existsSync(commonRulesPath)) {
+          mergedRules += fs.readFileSync(commonRulesPath, "utf8") + "\n\n";
+        }
+        if (fs.existsSync(codingRulesPath)) {
+          mergedRules += fs.readFileSync(codingRulesPath, "utf8") + "\n\n";
+        }
+
+        // Read all approved memories
+        const memoryApprovedDir = path.join(LIEM_OS_DIR, "core/memory/approved");
+        if (fs.existsSync(memoryApprovedDir)) {
+          const files = fs.readdirSync(memoryApprovedDir);
+          let memorySectionAdded = false;
+
+          for (const file of files) {
+            if (file.endsWith(".json")) {
+              if (!memorySectionAdded) {
+                mergedRules += "# Approved Self-Learned Rules\n\n";
+                memorySectionAdded = true;
+              }
+              const approvedData = JSON.parse(fs.readFileSync(path.join(memoryApprovedDir, file), "utf8"));
+              mergedRules += `## Pattern: ${approvedData.name}\nDescription: ${approvedData.description}\n\n${approvedData.rules}\n\n`;
+            }
+          }
+        }
+
+        const cursorRulesDest = path.join(WORKSPACE_ROOT, ".cursorrules");
+        fs.writeFileSync(cursorRulesDest, mergedRules, "utf8");
 
         return {
           content: [
             {
               type: "text",
-              text: `Upstream rules synchronized. Compiled new .cursorrules at '${cursorRulesDest}' with ${activeFiles.length > 0 ? `${activeFiles.length} active files filtered` : 'no filter'}.${metrics}`,
+              text: `Upstream rules synchronized. Compiled new .cursorrules at '${cursorRulesDest}'.${metrics}`,
             },
           ],
         };
@@ -765,7 +1058,36 @@ Recommended breakdown:
         }
 
         // Trigger dynamic compilation of .cursorrules
-        const cursorRulesDest = compileRules(activeFiles);
+        const commonRulesPath = path.join(LIEM_OS_DIR, "core/rules/common/rules.md");
+        const codingRulesPath = path.join(LIEM_OS_DIR, "core/rules/coding/rules.md");
+        let mergedRules = "# Compiled Cursor Rules for Liem OS\n\n";
+
+        if (fs.existsSync(commonRulesPath)) {
+          mergedRules += fs.readFileSync(commonRulesPath, "utf8") + "\n\n";
+        }
+        if (fs.existsSync(codingRulesPath)) {
+          mergedRules += fs.readFileSync(codingRulesPath, "utf8") + "\n\n";
+        }
+
+        // Read all approved memories
+        if (fs.existsSync(memoryApprovedDir)) {
+          const files = fs.readdirSync(memoryApprovedDir);
+          let memorySectionAdded = false;
+
+          for (const file of files) {
+            if (file.endsWith(".json")) {
+              if (!memorySectionAdded) {
+                mergedRules += "# Approved Self-Learned Rules\n\n";
+                memorySectionAdded = true;
+              }
+              const approvedData = JSON.parse(fs.readFileSync(path.join(memoryApprovedDir, file), "utf8"));
+              mergedRules += `## Pattern: ${approvedData.name}\nDescription: ${approvedData.description}\n\n${approvedData.rules}\n\n`;
+            }
+          }
+        }
+
+        const cursorRulesDest = path.join(WORKSPACE_ROOT, ".cursorrules");
+        fs.writeFileSync(cursorRulesDest, mergedRules, "utf8");
 
         return {
           content: [
@@ -775,90 +1097,6 @@ Recommended breakdown:
             },
           ],
         };
-      }
-
-      case "liem_os__worktree_create": {
-        const { branchName, targetPath } = args;
-        const resolvedPath = path.isAbsolute(targetPath) 
-          ? targetPath 
-          : path.resolve(WORKSPACE_ROOT, targetPath);
-
-        try {
-          const result = createWorktree(branchName, resolvedPath, WORKSPACE_ROOT);
-          return {
-            content: [
-              {
-                type: "text",
-                text: `Successfully created Git worktree at '${resolvedPath}' checking out branch '${branchName}'.\nOutput:\n${result}${metrics}`,
-              },
-            ],
-          };
-        } catch (e) {
-          return {
-            content: [
-              {
-                type: "text",
-                text: `Failed to create Git worktree: ${e.message}${metrics}`,
-              },
-            ],
-            isError: true,
-          };
-        }
-      }
-
-      case "liem_os__worktree_cleanup": {
-        const { targetPath } = args;
-        const resolvedPath = path.isAbsolute(targetPath) 
-          ? targetPath 
-          : path.resolve(WORKSPACE_ROOT, targetPath);
-
-        try {
-          const result = removeWorktree(resolvedPath, WORKSPACE_ROOT);
-          return {
-            content: [
-              {
-                type: "text",
-                text: `Successfully removed Git worktree at '${resolvedPath}'.\nOutput:\n${result}${metrics}`,
-              },
-            ],
-          };
-        } catch (e) {
-          return {
-            content: [
-              {
-                type: "text",
-                text: `Failed to clean up Git worktree: ${e.message}${metrics}`,
-              },
-            ],
-            isError: true,
-          };
-        }
-      }
-
-      case "liem_os__council": {
-        const { topic, members, mode = "debate" } = args;
-        try {
-          const agenda = prepareCouncil(topic, members, mode);
-          const instructions = formatSummonsInstructions(agenda);
-          return {
-            content: [
-              {
-                type: "text",
-                text: instructions + metrics
-              }
-            ]
-          };
-        } catch (e) {
-          return {
-            content: [
-              {
-                type: "text",
-                text: `Failed to summon Agent Council: ${e.message}${metrics}`
-              }
-            ],
-            isError: true
-          };
-        }
       }
 
       default:

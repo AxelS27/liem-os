@@ -135,7 +135,7 @@ Row Level Security is required on every user-facing table.
 - Trusted server operations use the service-role key from `apps/server` only.
 - Policies should be explicit and easy to reason about.
 - Never rely on client-side filtering for authorization.
-- **RLS Helper Functions**: To simplify writing clean policies, the database schema provides these pre-defined helper functions (defined in [20260613000000_security_helpers.sql](../../supabase/migrations/20260613000000_security_helpers.sql)):
+- **RLS Helper Functions**: To simplify writing clean policies, the database schema provides these pre-defined helper functions (defined in [20260613000000_security_helpers.sql](file:///d:/Experiments/liem-monorepo-template/supabase/migrations/20260613000000_security_helpers.sql)):
   - `auth_uid()`: Safely extracts the authenticated user's ID (`uuid`) from the request context. Use instead of calling `auth.uid()` directly.
   - `is_authenticated()`: Returns `boolean` indicating whether the request has a valid authenticated session.
   - `enable_rls_policies(table_name text)`: Automates enabling Row Level Security on a target table.

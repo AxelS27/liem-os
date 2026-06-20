@@ -32,7 +32,7 @@ for a different composition. See `docs/engineering/DESIGN_DNA.md` for the short 
 1. Copy this folder to the new project location, or create a new repo from the GitHub template.
 2. `pnpm install`
 3. Copy `.env.example` to `.env` and fill in the values.
-4. Set up the Context7 MCP server to enable live documentation retrieval (see [CONTEXT7.md](./CONTEXT7.md)).
+4. Set up the Context7 MCP server to enable live documentation retrieval (see [CONTEXT7.md](file:///d:/Liem%20Product/Liem%20Monorepo/docs/guides/CONTEXT7.md)).
 
 In Claude Code, steps 4-9 below are one command: give your product brief and run
 `/init-product`. The manual steps remain the reference for what it does (and the flow for
@@ -145,20 +145,20 @@ This template includes integrations for production-scale services that are optio
 
 ### 1. Upstash Redis & Rate Limiting (`@upstash/ratelimit`)
 
-- Pre-configured in the API server middleware [rate-limiter.ts](../../apps/server/src/middleware/rate-limiter.ts).
+- Pre-configured in the API server middleware [rate-limiter.ts](file:///d:/Liem%20Product%20/Liem%20Monorepo/apps/server/src/middleware/rate-limiter.ts).
 - Automatically uses Upstash Redis if the environment variables `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are set.
 - Gracefully falls back to a local in-memory token bucket if Redis is not configured, meaning it works out-of-the-box for development without any setup.
 
 ### 2. Size Limit Bundle Budget Checking (`size-limit`)
 
-- Set up in [package.json](../../apps/web/package.json) with a 200 KB budget limit for the production Javascript chunks (`.next/static/chunks/**/*.js`).
+- Set up in [package.json](file:///d:/Liem%20Product%20/Liem%20Monorepo/apps/web/package.json) with a 200 KB budget limit for the production Javascript chunks (`.next/static/chunks/**/*.js`).
 - Run `pnpm --filter @repo/web size-limit` to check your current build size. Next.js must be built (`pnpm --filter @repo/web build`) before running the check.
 - Prevents bundle bloat by failing when the bundle size exceeds the specified budget.
 
 ### 3. Background Jobs with Trigger.dev (`@trigger.dev/sdk`)
 
-- Integrated into `apps/server` with the configuration file [trigger.config.ts](../../apps/server/trigger.config.ts).
-- A sample background task/job is available at [example-job.ts](../../apps/server/src/trigger/example-job.ts) demonstrating trigger definitions, task definitions, and run logs.
+- Integrated into `apps/server` with the configuration file [trigger.config.ts](file:///d:/Liem%20Product%20/Liem%20Monorepo/apps/server/trigger.config.ts).
+- A sample background task/job is available at [example-job.ts](file:///d:/Liem%20Product%20/Liem%20Monorepo/apps/server/src/trigger/example-job.ts) demonstrating trigger definitions, task definitions, and run logs.
 - Useful for running long-running processes (e.g. video processing, bulk notifications, AI generations) asynchronously without blocking HTTP request threads.
 
 ## Default Web Branding

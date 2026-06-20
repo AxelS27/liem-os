@@ -1,40 +1,32 @@
-# Product Requirements Document (PRD) — <Project Name>
+# PRD - <Project Name>
 
-<!--
-  The PRD is the single source of truth for the product scope.
-  It answers: WHAT are we building, WHO is it for, WHY does it matter,
-  and what is NOT in scope (Non-Goals).
-  Keep it high-level and focused. Detailed feature lists live in docs/product/FEATURES.md.
--->
+<!-- Keep this file short. It defines WHAT and WHY, never HOW. The feature-by-feature breakdown lives in docs/product/FEATURES.md. -->
 
-## 1. Executive Summary
-<!-- Provide a 3-sentence description of the goal, target audience, and key value proposition. -->
-- 
+## Summary
 
-## 2. User Stories & Requirements
-<!-- List the primary user stories and target requirements. -->
-- **As a** <user type>, **I want to** <action> **so that** <value>.
-- **As a** <user type>, **I want to** <action> **so that** <value>.
+<!-- One paragraph. What is this product and what does it do? -->
 
-## 3. Out of Scope (Non-Goals)
-<!--
-  CRITICAL: List what you are explicitly NOT building in this phase.
-  This prevents scope creep and keeps the agent focused.
--->
-- 
+## Target Users
 
-## 4. Implementation Phases
-<!-- Map out the step-by-step phases of development. -->
-### Phase 1: Core Loop (P0)
-- [ ] 
+<!-- Who is this for? Be specific. Primary user first. -->
 
-### Phase 2: Full Product (P1)
-- [ ] 
+- **Primary:**
+- **Secondary:**
 
-### Phase 3: Polish & Optimization (P2)
-- [ ] 
+## Goals
 
-## 5. Risks & Mitigation
-<!-- Identify technical, security, or operational risks and how they will be handled. -->
-- **Risk**: 
-  - **Mitigation**: 
+## <!-- Measurable outcomes. Max 3-5. -->
+
+-
+
+## Non-Goals
+
+## <!-- Explicitly out of scope. This list prevents scope creep and AI drift. -->
+
+-
+
+## Product Principles
+
+## <!-- The handful of rules that resolve future tradeoffs. -->
+
+-

@@ -93,7 +93,7 @@ Wired in `.claude/settings.json`; scripts in `scripts/hooks/`.
 This template is pre-configured to recommend and utilize **Context7**, a real-time documentation retrieval MCP server developed by Upstash.
 
 - **Why use it:** AI assistants rely on static training data. Context7 fetches live, version-accurate documentation for libraries (e.g., Next.js, Supabase, Hono, React) during the chat to prevent outdated code and hallucinations.
-- **How to configure it:** Follow the instructions in [CONTEXT7.md](./CONTEXT7.md) (or run `npx ctx7 setup` in your terminal).
+- **How to configure it:** Follow the instructions in [CONTEXT7.md](file:///d:/Liem%20Product/Liem%20Monorepo/docs/guides/CONTEXT7.md) (or run `npx ctx7 setup` in your terminal).
 - **How to trigger it:** Add `use context7` to your prompt when asking about external libraries or APIs.
 
 ## A typical product, start to finish

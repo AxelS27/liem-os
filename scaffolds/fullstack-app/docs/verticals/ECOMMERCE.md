@@ -442,6 +442,163 @@ Avoid:
 - Buyer-facing pages that show seller/admin KPIs, revenue, operations counters, workflow
   coverage, or other data that only internal teams can act on.
 
+## Storefront Layout & Navigation Guardrails (Buyer-Centric)
+
+To optimize conversion and design trust, adhere to these buyer-first layout rules:
+1. **Showcase Featured Products Above the Fold:** Always show real product cards (merchandise, pricing, images) directly on the landing page's first viewport. Do not waste the above-the-fold space on generic SaaS headline/copy blocks.
+2. **Buyer-First Navbar:** The navbar is built for buyers. Never include seller recruitment prompts like "Sell on this website" or "Seller registration" in the primary navbar. Seller options should live at the footer of the landing page or as a quiet secondary link.
+3. **Order History Placement:** "Order History" must live inside the customer's account/profile page. Do not clutter the main navbar with an order history link.
+4. **Shopping Bag Icon:** Cart/Shopping bag in the navbar should use an icon-only representation (with a numeric count badge) rather than a text label next to it.
+
+## Detailed Seller & Admin Dashboards
+
+Sellers and Admins require robust operational interfaces:
+1. **Sales & Performance Graphics:** Both dashboards must feature visual analytics (e.g., using Recharts) for sales tracking, order volume, daily/weekly revenue, and transaction trends.
+2. **Comprehensive Product Creation (Seller):**
+   - Input fields: Product Name, Price, Quality description, category, and inventory count.
+   - Media upload: Must support user-uploaded images and videos directly. Allow multiple image uploads (at least 3-5 images) and a video preview file.
+3. **Advanced Customer & Seller Registration:**
+   - Identity collection: Registration must collect full name, active phone number (`nohp`), and location detail.
+   - Multi-Address Support: Customers must be able to save and manage multiple shipping addresses (e.g., Home, Office, Pick-up) and select which address to use at checkout.
+   - Auto-suggest and Map Select: Connect address inputs to the Google Maps Autocomplete API (see `docs/engineering/FRONTEND.md` for API rules) for auto-suggesting streets/locations, and provide a visual Google Maps selector to place a pin for precise coordinates.
+4. **Voucher System:**
+   - Voucher / Coupon codes: Customers can apply vouchers at checkout.
+   - Backend logic: Validate voucher code, active dates, min spend thresholds, and discount calculation (flat rate or percentage).
+
+## Simulation & Testing Systems (Development Mode)
+
+To make testing checkout, payment, shipping, and roles effortless, build these simulation tools directly into the template:
+1. **Role Selector Dropdown:**
+   - Include a floating dropdown selector (visible only in development/staging environments) allowing developers to hot-swap roles dynamically between: `Guest`, `Customer`, `Seller`, and `Admin`.
+   - Swapping roles should immediately update the session state, navbar controls, and route access to allow rapid end-to-end flow validation.
+2. **Payment Simulation:**
+   - In sandbox/development checkouts, provide a simulation toggle to select transaction outcomes: `Payment Success`, `Payment Failed`, or `Pending/Timeout`.
+   - Simulating success should invoke the payment webhook and transition the order status to `Paid` automatically.
+3. **Shipping & Courier Simulation:**
+   - Provide an operational control panel on the order status view to simulate fulfillment stages: `Simulate Package Dispatched`, `Simulate Out for Delivery`, and `Simulate Package Delivered`.
+   - Each state change should trigger database updates and update the buyer's order history dashboard in real-time.
+## E-commerce System Architecture & Production Guardrails
+
+To build a production-grade e-commerce/marketplace application, implement the following architectural components and strict limits:
+
+### 1. Performance Budget (High Priority)
+Ensure that the storefront loads instantly and remains highly responsive under heavy loads:
+- **Core Web Vitals:** Target LCP < 2.5s, CLS < 0.1, and INP < 200ms.
+- **Payload Limits:** Critical, render-blocking JavaScript bundle size must not exceed **250kb** (gzipped).
+- **Network Requests:** Limit critical path initial homepage requests to **≤ 3 requests**.
+- **Media Budgets:** Above-the-fold images must be limited to **≤ 4 images**.
+- **Hero Render Time:** Ensure the above-the-fold hero rendering completes in **< 1 second**.
+- **Optimizations:**
+  - Default: Server-Side Render (SSR) the storefront landing and catalog list pages for maximum performance and SEO.
+  - Preferred: Lazy-load all below-the-fold sections, dynamically import heavy components, and virtualize lists for catalogs containing >100 products.
+  - Preferred: Use skeleton loader layouts matching the UI structures instead of generic spinning loaders.
+  - Forbidden: Rendering uncompressed, un-resized user media on product grids.
+
+### 2. Search Architecture & Query Layers (High Priority)
+Implement a tiered query pipeline to ensure buyers find products quickly:
+- **Query Processing Layers:**
+  1. *L1 → Exact Match:* Exact keyword and ID matches.
+  2. *L2 → Prefix Match:* Suggest items as the user types (autocomplete).
+  3. *L3 → Typo Tolerance:* Fuzzy matching to capture spelling mistakes.
+  4. *L4 → Semantic Search:* Matching categories and intents (e.g., "running footwear" matches "sports shoes").
+  5. *L5 → Personalized Ranking:* Sort by sales velocity, user preferences, and relevance.
+- **Search Features:**
+  - Default: Show recent searches, trending keywords, and autocomplete suggestions for products and categories.
+  - Preferred: Search analytics dashboard tracking CTR, zero-result terms, and conversion rates.
+  - Exception/Fallback: If search yields zero results, show **No Result Recovery** blocks (related recommendations or popular alternatives) instead of an empty white page.
+
+### 3. Checkout Lifecycle & Concurrency (High Priority)
+Protect transactions and prevent state conflicts during the purchasing lifecycle:
+- **Lifecycle States:** `Cart` → `Review` → `Address Selection` → `Payment Method` → `Processing` → `Paid` → `Fulfillment/Shipped`.
+- **Concurrency & Stock Locks:**
+  - Default: Reserve stock temporarily when a customer enters the checkout processing state.
+  - Forbidden: Allowing customers to pay before verifying inventory availability (prevents overselling).
+  - Default: Expired stock reservations (e.g., checkout not completed in 15 minutes) must be auto-released back to available inventory.
+- **Payment Safety:**
+  - Default: Enforce strict payment idempotency using unique checkout tokens to prevent duplicate charging on double-clicks.
+  - Preferred: Set up abandoned checkout recovery triggers (e.g., email notification after 1 hour of abandonment).
+
+### 4. Marketplace Economics & Financial Systems (High Priority)
+For multi-seller systems, isolate funds and secure balances:
+- **Supported Flows:** Commissions, Platform Fees, Voucher/Promo Funding splits, Refund handling, Settlement Delays, Escrow, and Seller Balances.
+- **Safety Invariants:**
+  - Default: Isolate the platform's operational account from the escrow/trust accounts holding customer payments.
+  - Forbidden: Releasing payouts to sellers before the settlement delay period ends (to protect against refund exploits and chargebacks).
+  - Default: Keep comprehensive transaction ledger history and prevent negative payouts/balances.
+
+### 5. Fraud & Abuse Protection (High Priority)
+Secure the storefront against exploits and malicious behaviors:
+- **Abuse Vectors:** Fake orders, coupon/voucher abuse, multi-account creations for sign-up bonuses, bot scraping, spam sellers, and refund exploits.
+- **Protection Actions:**
+  - Default: Implement rate limiting on cart additions, logins, and API routes.
+  - Preferred: Apply shadow limits or temporary freezes on suspicious accounts for manual review.
+  - Preferred: Use device fingerprinting and monitor suspicious behaviors (e.g., same card used across 10 accounts).
+
+### 6. Inventory Consistency & Atomicity (High Priority)
+Inventory updates must be strictly consistent and transaction-safe:
+- **Stock States:** `Available` → `Reserved` → `Paid` → `Shipped` → `Returned`.
+- **Rules:**
+  - Default: Perform atomic stock updates in the database (e.g., using `UPDATE inventory SET stock = stock - quantity WHERE id = X AND stock >= quantity`).
+  - Default: Restore stock count automatically when reservations expire or orders are cancelled.
+  - Preferred: Maintain a transaction log of all inventory events for audit capability.
+
+### 7. Observability & Operations (Medium Priority)
+Monitor performance and user flows dynamically:
+- **Analytical Metrics:** Log Conversion Rate, Search CTR, Add To Cart rate, Checkout drop-off steps, and Refund rates.
+- **System Alerts:** Notify administrators immediately on high error rates, slow response timings, payment failures, or inventory mismatches.
+
+### 8. Permission System & RBAC (Medium Priority)
+Secure server endpoints and routes based on roles:
+- **Roles:** `Guest` (public views, search), `Customer` (cart, orders, checkout), `Seller` (products, shop metrics), `Admin` (global management, finance).
+- **Rules:**
+  - Default: Deny access by default; all API routes and database access (RLS) must explicitly verify user role permissions on the server side.
+  - Default: Keep audit logs of administrative actions.
+
+### 9. Empty / Error States (Medium Priority)
+Make sure errors are actionable:
+- **States:** No Products, No Search Results, Empty Cart, Empty Notifications, Offline.
+- **Rules:**
+  - Default: Every empty or error state must display a clear message, a supportive graphic, and suggest the **next logical action** (e.g., a "Continue Shopping" button or popular product highlights).
+
+### 10. Internationalization (Low Priority)
+- **Localisation Rules:**
+  - Default: Support currency, timezone, language, and metric/unit conversions. Use locale-aware formatting for numbers and dates.
+
+### 11. SEO & Discovery (Low Priority)
+- **Storefront SEO Requirements:**
+  - Default: Server-Side Render (SSR) catalog landing pages. Add JSON-LD Structured Data (Product schemas, reviews) and Open Graph tags.
+  - Default: Automatically update dynamic XML sitemaps and set up correct robots.txt directives.
+
+### 12. Content Moderation (Low Priority)
+- **Seller Upload Safety:**
+  - Default: Run automated text filters and basic duplicate checks on product listings.
+  - Preferred: Scan seller-uploaded images for safety before displaying them publicly.
+
+### 13. Event-Driven Architecture (Advanced)
+- **Core System Events:** `OrderCreated`, `PaymentSuccess`, `ShipmentDelivered`, `ReviewCreated`.
+- **Rules:**
+  - Default: All event handlers must be **idempotent** (processing the same event twice results in the same state change once).
+  - Default: Support automated retries with exponential backoff for event deliveries.
+
+---
+
+## Rule Flexibility Paradigm
+
+When writing or modifying e-commerce features, guidelines are structured to allow flexibility under specific circumstances. We avoid absolute command words ("MUST", "ALWAYS", "NEVER") and instead use:
+
+- **Default:** Standard expected behavior.
+- **Preferred:** High-quality/optimized approach to aim for.
+- **Exception:** Permitted deviation under a specific business case.
+- **Forbidden:** Strict boundary that violates architectural safety or design DNA.
+
+### Practical Layout & Navigation Examples:
+- **Default:** Order history lives inside the account page.
+  - *Exception:* Expose recent orders on the homepage when repeat purchase behavior/velocity is high (e.g., groceries or repeating subscription orders).
+- **Default:** Show featured products above the fold.
+  - *Exception:* Show a large campaign banner above the fold during major site-wide seasonal sales events.
+- **Default:** Cart/Shopping bag in the navbar is icon-only.
+  - *Exception:* Display a label like "Bag (2)" in wide layouts with abundant spacing.
+
 ## UI_UX.md Mapping Checklist
 
 When this playbook applies, `docs/product/UI_UX.md` should answer:

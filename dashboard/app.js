@@ -350,3 +350,137 @@ if (btnSummonCouncil) {
     }, 1500); // 1.5s delay to represent parallel subagent analysis
   });
 }
+
+// 5. Agent Council Chamber Simulation
+const btnSummonCouncil = document.getElementById("btn-summon-council");
+const councilTopicInput = document.getElementById("council-topic-input");
+const councilLoading = document.getElementById("council-loading");
+const councilDebateBox = document.getElementById("council-debate-box");
+const debateTranscript = document.getElementById("debate-transcript");
+const memberChipsContainer = document.getElementById("member-chips");
+
+if (memberChipsContainer) {
+  // Chip selection toggler
+  memberChipsContainer.addEventListener("click", (e) => {
+    const chip = e.target.closest(".chip");
+    if (chip) {
+      chip.classList.toggle("active");
+    }
+  });
+}
+
+if (btnSummonCouncil) {
+  btnSummonCouncil.addEventListener("click", () => {
+    const topic = councilTopicInput.value.trim();
+    if (!topic) return;
+
+    // Get active members
+    const activeChips = Array.from(memberChipsContainer.querySelectorAll(".chip.active"));
+    const selectedMembers = activeChips.map(c => c.dataset.member);
+
+    if (selectedMembers.length === 0) {
+      alert("Please select at least one council member!");
+      return;
+    }
+
+    // Show loading spinner
+    councilLoading.classList.remove("hidden");
+    councilDebateBox.classList.add("hidden");
+    debateTranscript.innerHTML = "";
+
+    setTimeout(() => {
+      councilLoading.classList.add("hidden");
+      councilDebateBox.classList.remove("hidden");
+
+      // Generate dialogue scripts dynamically based on topic keywords
+      const lower = topic.toLowerCase();
+      let dialogue = [];
+
+      selectedMembers.forEach(m => {
+        let comment = "";
+        if (m === "strategist") {
+          comment = `We must first establish the scope boundaries. The business logic of "${topic}" requires a clear mapping of tenant metadata and isolated milestones. I recommend treating this as a Phase 1 core loop requirement.`;
+        } else if (m === "architect") {
+          comment = `From an architectural perspective, the domain boundaries must be cleanly isolated. Sibling services must not import directly from each other. If we are implementing this, we need a shared contract library and explicit schema mapping.`;
+        } else if (m === "security") {
+          comment = `Warning: We must evaluate the threat model. Ensure zero hardcoded signing keys exist in source control, validate all incoming parameters against schemas, and strictly enforce Row-Level Security checks at the boundary.`;
+        } else if (m === "coder") {
+          comment = `I will implement this feature following strict TDD cycles. I'll write the failing unit and integration tests first, write the minimal functional code using pnpm dependencies, and optimize the functions to stay under 50 lines.`;
+        } else if (m === "auditor") {
+          comment = `I have audited all inputs. The proposed consensus satisfies the 5 relaxed Iron Laws. I approve the architecture subject to passing standard quality gates, Biome linting, and 80%+ test coverage.`;
+        } else if (m === "researcher") {
+          comment = `Based on my research of active frameworks, similar implementations on GitHub show that we should reference existing patterns rather than inventing custom abstractions. Let me pull documentation references.`;
+        } else if (m === "writer") {
+          comment = `I will craft clean developer guides and update working contexts. The wording must be clear, concise, and structured in readable markdown. I'll avoid hyperbolic language.`;
+        } else if (m === "designer") {
+          comment = `For the visual aspects of "${topic}", we must ensure consistent HSL colors, responsive spacing grids, and clear micro-animations (e.g. outline focus rings and hover transitions) that feel premium.`;
+        } else if (m === "tester") {
+          comment = `I'll set up integration test cases and verify coverage limits. We must target a minimum of 80% coverage across unit, integration, and E2E flows to satisfy our quality gates.`;
+        } else if (m === "operator") {
+          comment = `I will manage the project scaffolding and environment configurations. I'll prepare clean templates, configure state paths, and handle post-session handoffs.`;
+        } else if (m === "planner") {
+          comment = `I will decompose this task into clear, actionable bullet points in task.md, adding estimation buffers and capacity tracking to align with our milestone targets.`;
+        } else if (m === "build-resolver") {
+          comment = `I'll audit package dependency versions and resolve tsconfig mappings. We must prevent circular dependencies and TypeScript typing exceptions during compilation.`;
+        } else if (m === "database-reviewer") {
+          comment = `We need normalized tables and indexed joins. I'll specify foreign key constraints and write Row-Level Security (RLS) policies targeting tenant profiles.`;
+        } else if (m === "performance-optimizer") {
+          comment = `We must keep the critical path lean. I'll run profiles to identify query bottlenecks, optimize bundle assets, and ensure our responses return within 500ms.`;
+        } else if (m === "loop-operator") {
+          comment = `Safety check: I will monitor the execution state and prevent infinite loops. If our remediation counter hits 2/2, I'll force a hard halt to save token context.`;
+        } else if (m === "devops") {
+          comment = `I'll write a multi-stage Dockerfile and configure a GitHub Actions pipeline to automate testing, build checks, and deployment staging.`;
+        } else if (m === "browser") {
+          comment = `I'll implement E2E testing scripts using Playwright. I'll use robust accessibility role selectors and verify interaction flows on responsive viewport targets.`;
+        } else if (m === "consensus-coordinator") {
+          comment = `I will structure the voting weights and resolve conflicts between architectural recommendations and coding implementation speeds to achieve clean agreement.`;
+        } else if (m === "ux") {
+          comment = `I will map the happy path and error paths. We need clear page hierarchies, a single dominant primary CTA, and descriptive, polite form validation messages.`;
+        } else if (m === "a11y") {
+          comment = `We must enforce WCAG 2.1 compliance. Every interactive node must be focusable via Tab, and dynamic changes must be announced via aria-live elements.`;
+        } else if (m === "api-architect") {
+          comment = `I'll design the REST/GraphQL endpoints, enforcing a consistent envelope response structure, pagination query inputs, and standardized HTTP status codes.`;
+        } else if (m === "deep-researcher") {
+          comment = `I will query Context7 for up-to-date documentation on the APIs. I'll compile a technical note citing references to ensure zero version hallucinations.`;
+        } else if (m === "growth-agent") {
+          comment = `I'll draft social content highlighting this implementation. I'll focus on high-fidelity, value-dense copy showcasing our performance gains without generic fluff.`;
+        } else if (m === "ceo") {
+          comment = `From a business perspective, the complexity of this implementation must align with our primary OKR. We will focus on Phase 1 MVP to deliver maximum value quickly.`;
+        } else {
+          comment = `I'm analyzing the implications of "${topic}" under my core mandates and will coordinate with the team.`;
+        }
+
+        dialogue.push({
+          agent: m,
+          text: comment
+        });
+      });
+
+      // Add final synthesis consensus step
+      dialogue.push({
+        agent: "auditor",
+        isSynthesis: true,
+        text: `### 🏛️ Consensus Synthesis Verdict\n\nThe Agent Council has analyzed the topic: **"${topic}"**.\n\n**Consensus Decisions:**\n1. **Strategist & Planner**: Scope is approved as Phase 1 (P0 Core).\n2. **Architect & Coder**: Decoupled domain boundaries will be implemented using shared data contracts.\n3. **Security & Auditor**: Parameterized verification gates are mandated. Zero secrets in source.\n\n**Result:** APPROVED TO BUILD`
+      });
+
+      // Populate dialogue to UI
+      dialogue.forEach(d => {
+        const item = document.createElement("div");
+        item.className = `debate-item ${d.agent}`;
+        if (d.isSynthesis) {
+          item.innerHTML = `
+            <div class="debate-speaker">Consensus Synthesis Judge (Auditor)</div>
+            <div class="debate-text">${d.text.replace(/\n/g, "<br>")}</div>
+          `;
+        } else {
+          item.innerHTML = `
+            <div class="debate-speaker">${d.agent.toUpperCase()} Agent</div>
+            <div class="debate-text">"${d.text}"</div>
+          `;
+        }
+        debateTranscript.appendChild(item);
+      });
+
+    }, 1500); // 1.5s delay to represent parallel subagent analysis
+  });
+}

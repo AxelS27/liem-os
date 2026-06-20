@@ -663,7 +663,7 @@ Skeleton rules:
 - Use a **shimmer animation** (background gradient sweeping left-to-right) rather than opacity pulse. The motion direction matches reading direction.
 - Skeletons must appear within **100ms** of navigation. A blank white flash before the skeleton is a fail.
 - Skeleton → content transition: the skeleton fades out while the real content fades in. No layout shift. No position jump.
-- The shared `<Skeleton>` component is exported from `@repo/ui` ([skeleton.tsx](../../packages/ui/src/components/ui/skeleton.tsx)). Use this component to build skeletons that match your UI elements.
+- The shared `<Skeleton>` component is exported from `@repo/ui` ([skeleton.tsx](file:///d:/Experiments/liem-monorepo-template/packages/ui/src/components/ui/skeleton.tsx)). Use this component to build skeletons that match your UI elements.
 
 **Toast notifications.** Toast notifications are powered by `sonner`. The `<Toaster>` provider is already registered globally in the root layout. Components can trigger notifications by importing and calling the `toast` function from `sonner`:
 
@@ -736,3 +736,34 @@ Do not ship a component missing any state that its domain needs. A button withou
 ## Production Mindset
 
 Build for **stable, scalable, maintainable, production-ready** frontend delivery. Not experimental, not overengineered.
+
+## Universal Layout Stability & Spacing
+
+To prevent horizontal layout shifting (layout jitters when switching between scrollable and non-scrollable pages):
+1. **Reserve Scrollbar Space:** Add `scrollbar-gutter: stable;` to the `html` element selector in the global CSS (pre-configured in `globals.css`). This guarantees that centered page layouts maintain a stable horizontal center and don't jump when the vertical scrollbar appears.
+2. **Container Width Constraints:** Ensure all pages share a consistent layout container model (e.g., matching padding and max-widths) so that page headers, content, and footers align perfectly. Never use arbitrary width changes between simple informational routes and app routes unless specified by `UI_UX.md`.
+
+## Google Maps API & Location Selector Guidelines
+
+When building features requiring user address entry, location selection, or map-based checkouts, follow these implementation standards:
+
+### 1. Address Autocomplete & Suggestions
+- **API Choice:** Use the **Google Places API (Autocomplete)**.
+- **Trigger threshold:** Start fetching recommendations after the user types at least **3 characters** to save API quota and prevent noise.
+- **Debounce:** Always debounce the keypress handler by **300ms** to prevent redundant API calls on every keystroke.
+- **Suggestion UI:** Render suggestions as a clean, floating list below the input box (using Radix/shadcn popover or custom styling). Each suggestion must be keyboard-navigable and show clear visual hover/focus states.
+- **Fallback:** Allow the user to type and submit a manual address if the API fails, is offline, or doesn't find their location.
+
+### 2. Map Selector Component
+- **Map Library:** Use `@react-google-maps/api` or a lightweight map wrapper.
+- **Marker Pinning:** Let users drag the map to pin their location, or click to place a marker.
+- **Geocoding:** When a marker is dropped or moved, use the **Google Geocoding API** to automatically reverse-geocode the lat/lng into a readable address string and populate the address form fields.
+- **Visuals:** Keep map styles clean, matching the light/dark theme tokens, and behaving smoothly. Avoid heavy animations.
+
+### 3. API Configuration & Security
+- **API Key Storage:** Save the API key in the `.env` file under `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`.
+- **API Key Restrictions:** In the Google Cloud Console, **always restrict** the API key to prevent unauthorized usage:
+  - Add HTTP Referrer restrictions (restrict to the production domain and `http://localhost:*` for development).
+  - Restrict the APIs allowed to be called with this key to only: *Maps JavaScript API*, *Places API*, and *Geocoding API*.
+- **Async Loading:** Load the Google Maps script asynchronously (`libraries: ["places"]`) using the `@react-google-maps/api` `useJsApiLoader` hook to prevent blocking page loads.
+

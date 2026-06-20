@@ -29,6 +29,10 @@
   --rose-glow: rgba(244, 63, 94, 0.15);
   --rose-border: rgba(244, 63, 94, 0.25);
 
+  --rose-accent: #f43f5e;
+  --rose-glow: rgba(244, 63, 94, 0.15);
+  --rose-border: rgba(244, 63, 94, 0.25);
+
   --text-primary: #f3f4f6;
   --text-secondary: #9ca3af;
   --text-muted: #6b7280;
@@ -216,6 +220,7 @@ body {
 .card.auditor-card::before { background: var(--emerald-accent); }
 .card.memory-card::before { background: var(--amber-accent); }
 .card.council-card::before { background: var(--rose-accent); }
+.card.council-card::before { background: var(--rose-accent); }
 
 .card-header {
   display: flex;
@@ -243,6 +248,7 @@ body {
 .violet-glow { background: var(--violet-glow); color: var(--violet-accent); border: 1px solid var(--violet-border); }
 .emerald-glow { background: var(--emerald-glow); color: var(--emerald-accent); border: 1px solid var(--emerald-border); }
 .amber-glow { background: var(--amber-glow); color: var(--amber-accent); border: 1px solid var(--amber-border); }
+.rose-glow { background: var(--rose-glow); color: var(--rose-accent); border: 1px solid var(--rose-border); }
 .rose-glow { background: var(--rose-glow); color: var(--rose-accent); border: 1px solid var(--rose-border); }
 
 /* BUTTONS */
@@ -273,6 +279,8 @@ body {
 
 .btn-danger { background: var(--danger-accent); box-shadow: 0 0 15px rgba(239, 68, 68, 0.2); }
 .btn-danger:hover { background: #dc2626; transform: scale(1.02); }
+.btn-rose { background: var(--rose-accent); box-shadow: 0 0 15px rgba(244, 63, 94, 0.2); }
+.btn-rose:hover { background: #e11d48; transform: scale(1.02); }
 .btn-rose { background: var(--rose-accent); box-shadow: 0 0 15px rgba(244, 63, 94, 0.2); }
 .btn-rose:hover { background: #e11d48; transform: scale(1.02); }
 
@@ -460,6 +468,118 @@ input[type="text"]:focus, select:focus {
 .icon-cyan { color: var(--cyan-accent); }
 .icon-violet { color: var(--violet-accent); }
 .icon-emerald { color: var(--emerald-accent); }
+
+/* COUNCIL SPECIFIC STYLES */
+.col-span-2 {
+  grid-column: span 2;
+}
+
+@media (max-width: 900px) {
+  .col-span-2 {
+    grid-column: span 1;
+  }
+}
+
+.member-selector {
+  margin-top: 1rem;
+}
+
+.member-selector label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.member-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  color: var(--text-secondary);
+}
+
+.chip.active {
+  background: var(--rose-glow);
+  border-color: var(--rose-accent);
+  color: var(--rose-accent);
+  box-shadow: 0 0 10px rgba(244, 63, 94, 0.1);
+}
+
+.spinner-rose {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(244, 63, 94, 0.15);
+  border-top-color: var(--rose-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.debate-transcript {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.debate-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.85rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  animation: fadeIn 0.3s ease;
+}
+
+.debate-item.strategist { border-left: 3px solid var(--amber-accent); }
+.debate-item.architect { border-left: 3px solid var(--violet-accent); }
+.debate-item.security { border-left: 3px solid var(--danger-accent); }
+.debate-item.coder { border-left: 3px solid var(--cyan-accent); }
+.debate-item.auditor { border-left: 3px solid var(--emerald-accent); }
+
+.debate-speaker {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+}
+
+.debate-item.strategist .debate-speaker { color: var(--amber-accent); }
+.debate-item.architect .debate-speaker { color: var(--violet-accent); }
+.debate-item.security .debate-speaker { color: var(--danger-accent); }
+.debate-item.coder .debate-speaker { color: var(--cyan-accent); }
+.debate-item.auditor .debate-speaker { color: var(--emerald-accent); }
+
+.debate-text {
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--text-primary);
+}
+
+.debate-text pre {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.5rem;
+  border-radius: 6px;
+  margin-top: 0.5rem;
+  font-family: monospace;
+  color: #cbd5e1;
+}
 
 /* COUNCIL SPECIFIC STYLES */
 .col-span-2 {

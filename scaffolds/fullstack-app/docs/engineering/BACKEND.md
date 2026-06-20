@@ -61,16 +61,16 @@ Keep files focused:
 
 The server is pre-configured with security and observability middleware:
 
-- **CORS**: Configured in [app.ts](../../apps/server/src/app.ts) using Hono's `cors` middleware, restricting requests to specific allowed origins (`NEXT_PUBLIC_APP_URL` and `localhost`).
-- **Rate Limiting**: Custom sliding-window rate limiter in [rate-limiter.ts](../../apps/server/src/middleware/rate-limiter.ts) limits clients to 100 requests per minute by default to prevent brute-force attacks.
-- **Structured JSON Logger**: Custom logger in [logger.ts](../../apps/server/src/middleware/logger.ts) outputs logs in JSON format containing request method, path, response status, duration (ms), and IP address for clean production observability.
+- **CORS**: Configured in [app.ts](file:///d:/Experiments/liem-monorepo-template/apps/server/src/app.ts) using Hono's `cors` middleware, restricting requests to specific allowed origins (`NEXT_PUBLIC_APP_URL` and `localhost`).
+- **Rate Limiting**: Custom sliding-window rate limiter in [rate-limiter.ts](file:///d:/Experiments/liem-monorepo-template/apps/server/src/middleware/rate-limiter.ts) limits clients to 100 requests per minute by default to prevent brute-force attacks.
+- **Structured JSON Logger**: Custom logger in [logger.ts](file:///d:/Experiments/liem-monorepo-template/apps/server/src/middleware/logger.ts) outputs logs in JSON format containing request method, path, response status, duration (ms), and IP address for clean production observability.
 
 ## Interactive API Documentation
 
 Interactive Swagger API documentation is available at `/api/v1/docs` (using `@hono/swagger-ui`).
 
-- The OpenAPI v3 specification is defined in [openapi.json](../../apps/server/src/openapi.json).
-- When exposing new endpoints or changing existing contracts, update the [openapi.json](../../apps/server/src/openapi.json) file to keep the interactive documentation synchronized.
+- The OpenAPI v3 specification is defined in [openapi.json](file:///d:/Experiments/liem-monorepo-template/apps/server/src/openapi.json).
+- When exposing new endpoints or changing existing contracts, update the [openapi.json](file:///d:/Experiments/liem-monorepo-template/apps/server/src/openapi.json) file to keep the interactive documentation synchronized.
 
 ## Auth And Secrets
 
