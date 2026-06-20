@@ -807,7 +807,7 @@ Simply ask the Chief of Staff (Axel) directly in your AI editor (Cursor / Trae /
       console.log("[INFO] Installing RTK (Rust Token Killer) globally...");
       if (hasCargo) {
         try {
-          execSync(`${cargoCmd} install rtk`, { stdio: "inherit" });
+          execSync(`${cargoCmd} install --git https://github.com/rtk-ai/rtk`, { stdio: "inherit" });
           console.log("[SUCCESS] RTK installed globally!");
         } catch (err) {
           console.warn("[WARNING] Failed to install RTK globally: " + err.message);
