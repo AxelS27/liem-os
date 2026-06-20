@@ -487,7 +487,7 @@ Simply ask the Chief of Staff (Axel) directly in your AI editor (Cursor / Trae /
         }
       }
 
-      // B.5. Set up virtual environment (.venv) locally in the workspace
+      // C. Set up virtual environment (.venv) locally in the workspace and install markitdown
       console.log("\n[INFO] Setting up project-local virtual environment (.venv)...");
       const venvPath = path.join(targetDir, ".venv");
       let hasVenv = fs.existsSync(venvPath);
@@ -510,7 +510,6 @@ Simply ask the Chief of Staff (Axel) directly in your AI editor (Cursor / Trae /
         console.log("[INFO] Existing .venv detected.");
       }
 
-      // B.6. Install required tools inside the local .venv (e.g. markitdown)
       if (hasVenv) {
         console.log("[INFO] Installing required tools (markitdown) inside .venv...");
         try {
@@ -528,52 +527,10 @@ Simply ask the Chief of Staff (Axel) directly in your AI editor (Cursor / Trae /
         }
       }
 
-      // B.5. Set up virtual environment (.venv) locally in the workspace
-      console.log("\n[INFO] Setting up project-local virtual environment (.venv)...");
-      const venvPath = path.join(targetDir, ".venv");
-      let hasVenv = fs.existsSync(venvPath);
-
-      if (!hasVenv) {
-        try {
-          if (hasUv) {
-            const pythonVersionFlag = hasSystemPython ? "" : `--python ${pythonVersionToUse}`;
-            execSync(`${uvCmd} venv ${pythonVersionFlag}`, { stdio: "inherit" });
-          } else {
-            const pyCmd = isWin ? "python" : "python3";
-            execSync(`${pyCmd} -m venv .venv`, { stdio: "inherit" });
-          }
-          hasVenv = true;
-          console.log("[SUCCESS] .venv created successfully!");
-        } catch (err) {
-          console.warn("[WARNING] Failed to create virtual environment (.venv): " + err.message);
-        }
-      } else {
-        console.log("[INFO] Existing .venv detected.");
-      }
-
-      // B.6. Install required tools inside the local .venv (e.g. markitdown)
-      if (hasVenv) {
-        console.log("[INFO] Installing required tools (markitdown) inside .venv...");
-        try {
-          if (hasUv) {
-            execSync(`${uvCmd} pip install markitdown`, { stdio: "inherit" });
-          } else {
-            const pipPath = isWin
-              ? path.join(venvPath, "Scripts", "pip.exe")
-              : path.join(venvPath, "bin", "pip");
-            execSync(`"${pipPath}" install markitdown`, { stdio: "inherit" });
-          }
-          console.log("[SUCCESS] markitdown installed inside .venv!");
-        } catch (err) {
-          console.warn("[WARNING] Failed to install markitdown in .venv: " + err.message);
-        }
-      }
-
-      // C. Install code-review-graph (user global/tool space)
+      // D. Install code-review-graph (user global/tool space)
       console.log("[INFO] Installing code-review-graph...");
       try {
         if (hasUv) {
-          // Use uv tool install. If system python was found, let uv manage it automatically. If not, use 3.12.10.
           const pythonFlag = hasSystemPython ? "" : `--python ${pythonVersionToUse}`;
           execSync(`${uvCmd} tool install ${pythonFlag} code-review-graph`, { stdio: "inherit" });
         } else {
@@ -581,7 +538,6 @@ Simply ask the Chief of Staff (Axel) directly in your AI editor (Cursor / Trae /
         }
         console.log("[SUCCESS] code-review-graph installed!");
       } catch (err) {
-        // Fallback for tool install if 3.12.10 pin failed
         if (hasUv && err.message.includes(pythonVersionToUse)) {
           try {
             execSync(`${uvCmd} tool install code-review-graph`, { stdio: "inherit" });
@@ -594,7 +550,7 @@ Simply ask the Chief of Staff (Axel) directly in your AI editor (Cursor / Trae /
         }
       }
 
-      // D. Install token-optimizer (local)
+      // E. Install token-optimizer (local)
       console.log("[INFO] Installing token-optimizer...");
       try {
         if (usePnpm) {
@@ -607,7 +563,7 @@ Simply ask the Chief of Staff (Axel) directly in your AI editor (Cursor / Trae /
         console.warn("[WARNING] Failed to install token-optimizer automatically: " + err.message);
       }
 
-      // E. Check and Auto-Install Rust/Cargo
+      // F. Check and Auto-Install Rust/Cargo
       let cargoCmd = "cargo";
       let hasCargo = false;
       try {
@@ -644,173 +600,32 @@ Simply ask the Chief of Staff (Axel) directly in your AI editor (Cursor / Trae /
         }
       }
 
-      // F. Install RTK (global Cargo)
-      console.log("[INFO] Installing RTK (Rust Token Killer) globally...");
+      // G. Install RTK (global Cargo) only if not already installed
+      console.log("[INFO] Checking if RTK (Rust Token Killer) is already installed...");
       if (hasCargo) {
+        let hasRtk = false;
         try {
-          execSync(`${cargoCmd} install rtk`, { stdio: "inherit" });
-          console.log("[SUCCESS] RTK installed globally!");
-        } catch (err) {
-          console.warn("[WARNING] Failed to install RTK globally: " + err.message);
-        }
-      } else {
-        console.warn("[WARNING] Cargo not found. Skipping global RTK installation.");
-      }
-
-      // 6. Install Token Optimizers automatically
-      console.log("\n[INFO] Checking system pre-requisites and installing recommended Token Optimizers...");
-
-      const home = os.homedir();
-      const isWin = os.platform() === "win32";
-
-      // A. Check and Auto-Install UV
-      let uvCmd = "uv";
-      let hasUv = false;
-      try {
-        execSync("uv --version", { stdio: "ignore" });
-        hasUv = true;
-      } catch {
-        // Not in path, check default install location
-        const defaultUvPath = isWin
-          ? path.join(home, ".local", "bin", "uv.exe")
-          : path.join(home, ".local", "bin", "uv");
-        if (fs.existsSync(defaultUvPath)) {
-          uvCmd = `"${defaultUvPath}"`;
-          hasUv = true;
-        }
-      }
-
-      if (!hasUv) {
-        console.log("[INFO] uv not found. Installing uv automatically...");
-        try {
-          if (isWin) {
-            execSync('powershell -ExecutionPolicy Bypass -c "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; irm https://astral.sh/uv/install.ps1 | iex"', { stdio: "inherit" });
-          } else {
-            execSync("curl -LsSf https://astral.sh/uv/install.sh | sh", { stdio: "inherit" });
-          }
-          const defaultUvPath = isWin
-            ? path.join(home, ".local", "bin", "uv.exe")
-            : path.join(home, ".local", "bin", "uv");
-          if (fs.existsSync(defaultUvPath)) {
-            uvCmd = `"${defaultUvPath}"`;
-            hasUv = true;
-            console.log("[SUCCESS] uv installed successfully!");
-          }
-        } catch (err) {
-          console.warn("[WARNING] Failed to install uv automatically: " + err.message);
-        }
-      }
-
-      // B. Ensure Python is available (prefer user's active python, fallback to 3.12.10 via UV if missing)
-      let pythonVersionToUse = "3.12.10";
-      let hasSystemPython = false;
-      try {
-        const sysPyVer = execSync("python --version", { encoding: "utf8" }).trim();
-        hasSystemPython = true;
-        console.log(`[INFO] System Python detected: ${sysPyVer}`);
-      } catch {
-        try {
-          const sysPyVer3 = execSync("python3 --version", { encoding: "utf8" }).trim();
-          hasSystemPython = true;
-          console.log(`[INFO] System Python detected: ${sysPyVer3}`);
+          execSync("rtk --version", { stdio: "ignore" });
+          hasRtk = true;
         } catch {
-          // No system python found
+          const defaultRtkPath = isWin
+            ? path.join(home, ".cargo", "bin", "rtk.exe")
+            : path.join(home, ".cargo", "bin", "rtk");
+          if (fs.existsSync(defaultRtkPath)) {
+            hasRtk = true;
+          }
         }
-      }
 
-      if (!hasSystemPython && hasUv) {
-        console.log(`[INFO] No system Python found. Installing Python ${pythonVersionToUse} via uv...`);
-        try {
-          execSync(`${uvCmd} python install ${pythonVersionToUse}`, { stdio: "inherit" });
-          console.log(`[SUCCESS] Python ${pythonVersionToUse} is ready!`);
-        } catch (err) {
-          console.warn(`[WARNING] uv failed to install Python ${pythonVersionToUse}. Falling back to default Python.`);
-        }
-      }
-
-      // C. Install code-review-graph (user global/tool space)
-      console.log("[INFO] Installing code-review-graph...");
-      try {
-        if (hasUv) {
-          // Use uv tool install. If system python was found, let uv manage it automatically. If not, use 3.12.10.
-          const pythonFlag = hasSystemPython ? "" : `--python ${pythonVersionToUse}`;
-          execSync(`${uvCmd} tool install ${pythonFlag} code-review-graph`, { stdio: "inherit" });
+        if (hasRtk) {
+          console.log("[INFO] RTK is already installed. Skipping installation to avoid repeated downloading.");
         } else {
-          execSync("pip install --user code-review-graph", { stdio: "inherit" });
-        }
-        console.log("[SUCCESS] code-review-graph installed!");
-      } catch (err) {
-        // Fallback for tool install if 3.12.10 pin failed
-        if (hasUv && err.message.includes(pythonVersionToUse)) {
+          console.log("[INFO] RTK not found. Installing RTK (Rust Token Killer) globally...");
           try {
-            execSync(`${uvCmd} tool install code-review-graph`, { stdio: "inherit" });
-            console.log("[SUCCESS] code-review-graph installed!");
-          } catch (e2) {
-            console.warn("[WARNING] Failed to install code-review-graph: " + e2.message);
+            execSync(`${cargoCmd} install --git https://github.com/rtk-ai/rtk`, { stdio: "inherit" });
+            console.log("[SUCCESS] RTK installed globally!");
+          } catch (err) {
+            console.warn("[WARNING] Failed to install RTK globally: " + err.message);
           }
-        } else {
-          console.warn("[WARNING] Failed to install code-review-graph: " + err.message);
-        }
-      }
-
-      // D. Install token-optimizer (local)
-      console.log("[INFO] Installing token-optimizer...");
-      try {
-        if (usePnpm) {
-          execSync("pnpm add -D token-optimizer", { stdio: "inherit" });
-        } else {
-          execSync("npm install --save-dev token-optimizer", { stdio: "inherit" });
-        }
-        console.log("[SUCCESS] token-optimizer installed!");
-      } catch (err) {
-        console.warn("[WARNING] Failed to install token-optimizer automatically: " + err.message);
-      }
-
-      // E. Check and Auto-Install Rust/Cargo
-      let cargoCmd = "cargo";
-      let hasCargo = false;
-      try {
-        execSync("cargo --version", { stdio: "ignore" });
-        hasCargo = true;
-      } catch {
-        const defaultCargoPath = isWin
-          ? path.join(home, ".cargo", "bin", "cargo.exe")
-          : path.join(home, ".cargo", "bin", "cargo");
-        if (fs.existsSync(defaultCargoPath)) {
-          cargoCmd = `"${defaultCargoPath}"`;
-          hasCargo = true;
-        }
-      }
-
-      if (!hasCargo) {
-        console.log("[INFO] Rust/Cargo not found. Installing Rustup silently...");
-        try {
-          if (isWin) {
-            execSync('powershell -ExecutionPolicy Bypass -c "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; (New-Object System.Net.WebClient).DownloadFile(\'https://win.rustup.rs/x86_64\', \'rustup-init.exe\'); Start-Process -FilePath \'./rustup-init.exe\' -ArgumentList \'-y --default-toolchain stable\' -NoNewWindow -Wait; Remove-Item \'./rustup-init.exe\'"', { stdio: "inherit" });
-          } else {
-            execSync("curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y", { stdio: "inherit" });
-          }
-          const defaultCargoPath = isWin
-            ? path.join(home, ".cargo", "bin", "cargo.exe")
-            : path.join(home, ".cargo", "bin", "cargo");
-          if (fs.existsSync(defaultCargoPath)) {
-            cargoCmd = `"${defaultCargoPath}"`;
-            hasCargo = true;
-            console.log("[SUCCESS] Rust/Cargo installed successfully!");
-          }
-        } catch (err) {
-          console.warn("[WARNING] Failed to install Rust/Cargo automatically: " + err.message);
-        }
-      }
-
-      // F. Install RTK (global Cargo)
-      console.log("[INFO] Installing RTK (Rust Token Killer) globally...");
-      if (hasCargo) {
-        try {
-          execSync(`${cargoCmd} install --git https://github.com/rtk-ai/rtk`, { stdio: "inherit" });
-          console.log("[SUCCESS] RTK installed globally!");
-        } catch (err) {
-          console.warn("[WARNING] Failed to install RTK globally: " + err.message);
         }
       } else {
         console.warn("[WARNING] Cargo not found. Skipping global RTK installation.");
